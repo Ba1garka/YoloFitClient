@@ -49,7 +49,7 @@ object AuthLocalDataSource {
 
     private val USER_DATA = stringPreferencesKey("current_user")
     private var _currentUser: UserDto? = null
-    suspend fun getCurrentUser(): UserDto? {
+    suspend fun getCurrentUser(): UserDto {
         if (_currentUser == null) {
             _currentUser = App.context.dataStore.data.map { preferences ->
                 preferences[USER_DATA]?.let { json ->
@@ -58,7 +58,7 @@ object AuthLocalDataSource {
             }
                 .firstOrNull()
         }
-        return _currentUser
+        return _currentUser!!
     }
 
     suspend fun saveUser(user: UserDto) {

@@ -3,16 +3,21 @@ package com.example.yolofitclient.ui.screen.exercise
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,14 +27,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.example.yolofitclient.domain.entity.ExerciseEntity
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
-import com.example.yolofitclient.ui.theme.YoloFitClientTheme
 
 
 object ExerciseColors {
@@ -46,14 +49,15 @@ object ExerciseColors {
 
 @Composable
 fun ExerciseListScreen(
-    exerciseListViewModel: ExerciseListViewModel = viewModel<ExerciseListViewModel>()
+    exerciseListViewModel: ExerciseListViewModel = viewModel<ExerciseListViewModel>(),
+    onWorkoutCreateClick: (List<Int>) -> Unit
 ) {
     val state by exerciseListViewModel.uiState.collectAsState()
 
+    val selectedIds = remember { mutableStateListOf<Int>() }
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ExerciseColors.DarkBackground)
+        modifier = Modifier.fillMaxSize().background(ExerciseColors.DarkBackground)
     ) {
 
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -81,7 +85,7 @@ fun ExerciseListScreen(
         when(val currentState = state){
             is ExerciseListState.Error -> ListErrorState(currentState, onRefresh = {exerciseListViewModel.getData()} )
             is ExerciseListState.Loading -> ListLoadingState()
-            is ExerciseListState.Content -> ListContentState(currentState)
+            is ExerciseListState.Content -> ListContentState(currentState, onWorkoutCreateClick, selectedIds)
         }
     }
 }
@@ -131,7 +135,9 @@ private fun ListErrorState(
 
 @Composable
 private fun ListContentState(
-    state: ExerciseListState.Content
+    state: ExerciseListState.Content,
+    onWorkoutCreateClick: (List<Int>) -> Unit,
+    selectedIds : SnapshotStateList<Int>,
 ){
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -148,10 +154,44 @@ private fun ListContentState(
                     letterSpacing = 2.sp
                 )
             )
+
+            if (selectedIds.isNotEmpty()) {
+                Button(
+                    onClick = { onWorkoutCreateClick(selectedIds.toList()) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ExerciseColors.AccentGreenDark
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Создать (${selectedIds.size})",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
 
         items(state.users) { exercise ->
-            ExerciseCard(exercise = exercise)
+            ExerciseCard(
+                exercise = exercise,
+                isSelected = selectedIds.contains(exercise.id),
+                onSelectionToggle = {
+                    if (selectedIds.contains(exercise.id)) {
+                        selectedIds.remove(exercise.id)
+                    } else {
+                        selectedIds.add(exercise.id)
+                    }
+                },
+                onClick = {
+
+                }
+            )
         }
     }
 }
@@ -160,6 +200,8 @@ private fun ListContentState(
 fun ExerciseCard(
     exercise: ExerciseEntity,
     modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
+    onSelectionToggle: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
     val cardShape = DiagonalRoundedCornerShape(
@@ -170,12 +212,25 @@ fun ExerciseCard(
     )
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (isSelected) Modifier.border(
+                    2.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            ExerciseColors.AccentGreen,
+                            ExerciseColors.AccentGreenDark
+                        )
+                    ),
+                    cardShape
+                ) else Modifier
+            ),
         shape = cardShape,
         colors = CardDefaults.cardColors(
             containerColor = ExerciseColors.CardBackground
         ),
-        border = BorderStroke(
+        border = if (!isSelected) BorderStroke(
             1.dp,
             Brush.linearGradient(
                 colors = listOf(
@@ -184,14 +239,14 @@ fun ExerciseCard(
                     ExerciseColors.AccentGreen.copy(alpha = 0.1f)
                 )
             )
-        ),
+        ) else null,
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp
+            defaultElevation = if (isSelected) 12.dp else 8.dp
         ),
         onClick = onClick
     ) {
         Box {
-            // Градиентный оверлей на карточке
+
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -212,7 +267,6 @@ fun ExerciseCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Изображение упражнения с градиентной рамкой
                 Box(
                     modifier = Modifier
                         .size(100.dp)
@@ -239,8 +293,6 @@ fun ExerciseCard(
                             .clip(RoundedCornerShape(14.dp)),
                         contentScale = ContentScale.Crop
                     )
-
-                    // Градиентный оверлей на изображении
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -262,7 +314,6 @@ fun ExerciseCard(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Название упражнения
                     Text(
                         text = exercise.name,
                         style = MaterialTheme.typography.displayMedium.copy(
@@ -272,8 +323,6 @@ fun ExerciseCard(
                             letterSpacing = 0.5.sp
                         )
                     )
-
-                    // Зона тела с градиентным текстом
                     Text(
                         text = exercise.bodyZoneName,
                         style = MaterialTheme.typography.labelSmall.copy(
@@ -282,8 +331,6 @@ fun ExerciseCard(
                             letterSpacing = 1.sp
                         )
                     )
-
-                    // Градиентный разделитель
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.7f)
@@ -298,32 +345,36 @@ fun ExerciseCard(
                                 )
                             )
                     )
-
-                    // Параметры упражнения
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Подходы
-                        ParameterChip(
-                            label = "Подходы",
-                            value = "${exercise.defaultSets}"
-                        )
-
-                        // Повторения
-                        ParameterChip(
-                            label = "Повторы",
-                            value = "${exercise.defaultReps}"
-                        )
-
-                        // Коэффициент если не пустой
-                        if (exercise.weightCoefficient.isNotEmpty() && exercise.weightCoefficient != "0") {
-                            ParameterChip(
-                                label = "Коэф.",
-                                value = exercise.weightCoefficient
-                            )
-                        }
+                        ParameterChip(label = "Подходы", value = "${exercise.defaultSets}")
+                        ParameterChip(label = "Повторы", value = "${exercise.defaultReps}")
                     }
+                }
+
+                IconButton(
+                    onClick = {
+                        onSelectionToggle()
+                    },
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isSelected)
+                                ExerciseColors.AccentGreen.copy(alpha = 0.2f)
+                            else
+                                ExerciseColors.CardBorder.copy(alpha = 0.2f)
+                        )
+                ) {
+                    Icon(
+                        imageVector = if (isSelected) Icons.Default.CheckCircle
+                        else Icons.Default.AddCircleOutline,
+                        contentDescription = if (isSelected) "Выбрано" else "Выбрать",
+                        tint = if (isSelected) ExerciseColors.AccentGreen else ExerciseColors.TextDim,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
@@ -371,13 +422,5 @@ private fun ParameterChip(
                 textAlign = TextAlign.Center
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    YoloFitClientTheme {
-        ExerciseListScreen()
     }
 }

@@ -64,7 +64,6 @@ fun RegisterScreen(
     val fitnessLevels = listOf("beginner", "intermediate", "advanced")
     var showFitnessDropdown by remember { mutableStateOf(false) }
 
-    // Обработка успешной регистрации
     LaunchedEffect(state) {
         if (state is RegisterState.Content) {
             val userEntity = (state as RegisterState.Content).user
@@ -80,6 +79,10 @@ fun RegisterScreen(
                 fitnessLevel = userEntity.fitnessLevel,
                 photoUrl = userEntity.photoUrl
             )
+
+            if (userDto.name != null){
+                AuthLocalDataSource.setToken(userDto.name, password)
+            }
 
             AuthLocalDataSource.saveUser(userDto)
             onRegisterSuccess()
@@ -226,7 +229,7 @@ private fun RegisterContentState(
     Box(
         modifier = Modifier.fillMaxSize().background(AuthColors.Background)
     ) {
-        // Фоновые градиенты
+
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
                 brush = Brush.radialGradient(
@@ -245,7 +248,7 @@ private fun RegisterContentState(
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp)
         ) {
-            // Кнопка назад
+
             IconButton(
                 onClick = {
                     if (currentStep > 0) {
@@ -288,7 +291,6 @@ private fun RegisterContentState(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Индикатор шагов
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -307,7 +309,6 @@ private fun RegisterContentState(
                 }
             }
 
-            // Ошибка валидации
             AnimatedVisibility(
                 visible = validationError != null,
                 enter = slideInVertically() + fadeIn(),
@@ -344,7 +345,6 @@ private fun RegisterContentState(
             }
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Анимированное переключение шагов
             AnimatedContent(
                 targetState = currentStep,
                 transitionSpec = {
@@ -391,10 +391,9 @@ private fun RegisterContentState(
                     )
                 }
             }
-
             Spacer(modifier = Modifier.weight(1f))
 
-            // Кнопки навигации
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)

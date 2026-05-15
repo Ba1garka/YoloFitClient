@@ -10,6 +10,7 @@ class ExerciseRepository(
         return exerciseInfoDataSource.getExercises().map { listDto ->
             listDto.mapNotNull { dto ->
                 ExerciseEntity(
+                    id = dto.id ?: return@mapNotNull null,
                     name = dto.name ?: return@mapNotNull null,
                     defaultSets = dto.defaultSets ?: return@mapNotNull null,
                     defaultReps = dto.defaultReps ?: return@mapNotNull null,

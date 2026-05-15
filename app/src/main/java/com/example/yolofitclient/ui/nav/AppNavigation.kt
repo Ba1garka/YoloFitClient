@@ -2,7 +2,6 @@ package com.example.yolofitclient.ui.nav
 
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,24 +24,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.yolofitclient.ui.screen.login.LoginScreen
 import com.example.yolofitclient.ui.screen.profile.ProfileScreen
 import com.example.yolofitclient.ui.screen.register.RegisterScreen
-import kotlinx.coroutines.delay
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.example.yolofitclient.ui.screen.createworkout.CreateWorkoutScreen
+import com.example.yolofitclient.ui.screen.exercise.SharedWorkoutViewModel
+import com.example.yolofitclient.ui.screen.home.HomeScreen
 
 
 @Composable
@@ -51,6 +49,7 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val sharedWorkoutViewModel: SharedWorkoutViewModel = viewModel()
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -60,7 +59,12 @@ fun AppNavigation() {
             modifier = Modifier.fillMaxSize()
         ) {
             composable<ExerciseListRoute> {
-                ExerciseListScreen()
+                ExerciseListScreen(
+                    onWorkoutCreateClick = { selectedIds ->
+                        sharedWorkoutViewModel.setSelectedIds(selectedIds)
+                        navController.navigate(CreateWorkoutRoute)
+                    }
+                )
             }
             composable<RegisterRoute> {
                 RegisterScreen(
@@ -94,12 +98,33 @@ fun AppNavigation() {
 
                 )
             }
+            composable<CreateWorkoutRoute> {
+                val ids by sharedWorkoutViewModel.selectedIds.collectAsState()
+
+                CreateWorkoutScreen(
+                    selectedIds = ids,
+                    onBackClick = {
+                        sharedWorkoutViewModel.clearSelection()
+                        navController.popBackStack()
+                    },
+                    onWorkoutCreated = {
+                        sharedWorkoutViewModel.clearSelection()
+                        navController.popBackStack()
+                    }
+                )
+            }
+            composable<HomeRoute> {
+                HomeScreen(
+
+                )
+            }
 
         }
 
         val showBottomBar = currentRoute in listOf(
             ExerciseListRoute::class.qualifiedName,
-            ProfileRoute::class.qualifiedName
+            ProfileRoute::class.qualifiedName,
+            HomeRoute::class.qualifiedName,
         )
 
         if (showBottomBar) {
@@ -130,6 +155,11 @@ fun BottomNavBar(
             route = ProfileRoute::class.qualifiedName ?: "profile",
             icon = Icons.Default.Person,
             label = "Профиль"
+        ),
+        BottomNavItem(
+            route = HomeRoute::class.qualifiedName ?: "home",
+            icon = Icons.Default.Home,
+            label = "Дом"
         )
     )
 
@@ -162,9 +192,7 @@ fun BottomNavBar(
     }
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 20.dp)
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
         Box(
             modifier = Modifier
@@ -216,7 +244,6 @@ fun BottomNavBar(
                                 indication = null
                             ) {
                                 if (currentRoute != item.route) {
-                                    // Навигация в зависимости от выбранного элемента
                                     when (item.route) {
                                         items[0].route -> navController.navigate(ExerciseListRoute) {
                                             popUpTo(navController.graph.findStartDestination().id) {
@@ -226,6 +253,13 @@ fun BottomNavBar(
                                             restoreState = true
                                         }
                                         items[1].route -> navController.navigate(ProfileRoute) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                        items[2].route -> navController.navigate(HomeRoute) {
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
                                             }

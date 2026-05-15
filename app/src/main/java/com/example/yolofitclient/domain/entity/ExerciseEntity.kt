@@ -4,6 +4,8 @@ package com.example.yolofitclient.domain.entity
 
 class ExerciseEntity(
 
+    val id : Int,
+
     val name: String,
 
     val defaultSets: Int,

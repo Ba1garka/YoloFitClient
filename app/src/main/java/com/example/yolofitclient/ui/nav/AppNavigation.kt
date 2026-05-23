@@ -41,6 +41,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.yolofitclient.ui.screen.createworkout.CreateWorkoutScreen
 import com.example.yolofitclient.ui.screen.exercise.SharedWorkoutViewModel
 import com.example.yolofitclient.ui.screen.home.HomeScreen
+import com.example.yolofitclient.ui.screen.workout.WorkoutScreen
 
 
 @Composable
@@ -114,8 +115,32 @@ fun AppNavigation() {
                 )
             }
             composable<HomeRoute> {
-                HomeScreen(
+                val refreshTrigger by sharedWorkoutViewModel.refreshHomeTrigger.collectAsState()
 
+                HomeScreen(
+                    refreshTrigger = refreshTrigger,
+                    onWorkoutStartClick = { workoutId ->
+                        sharedWorkoutViewModel.setWorkoutId(workoutId)
+                        navController.navigate(WorkoutRoute)
+                    }
+                )
+            }
+            composable<WorkoutRoute> {
+                val workoutId by sharedWorkoutViewModel.selectedWorkoutId.collectAsState()
+
+                WorkoutScreen(
+                    workoutId = workoutId ?: 0,
+                    onFinish = {
+                        sharedWorkoutViewModel.triggerHomeRefresh()
+                        sharedWorkoutViewModel.clearWorkoutId()
+                        navController.navigate(HomeRoute) {
+                            popUpTo(HomeRoute) { inclusive = true }
+                        }
+                    },
+                    onBack = {
+                        sharedWorkoutViewModel.clearWorkoutId()
+                        navController.popBackStack()
+                    }
                 )
             }
 

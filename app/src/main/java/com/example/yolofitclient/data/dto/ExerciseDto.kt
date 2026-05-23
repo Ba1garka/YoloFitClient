@@ -17,4 +17,6 @@ data class ExerciseDto(
     val weightCoefficient: String?,
     @SerialName("bodyZoneName")
     val bodyZoneName: String?,
+    @SerialName("trackingConfig")
+    val trackingConfig: ExerciseTrackingConfigDto? = null
 )

@@ -1,10 +1,12 @@
 package com.example.yolofitclient.data.source
 
 import com.example.yolofitclient.data.dto.CreateWorkoutDto
+import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.data.dto.WorkoutDto
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.contentType
@@ -51,13 +53,62 @@ class WorkoutDataSource {
 
     suspend fun getUserWorkouts(userId: Int?): Result<List<WorkoutDto>> = withContext(Dispatchers.IO) {
         runCatching {
-            val result = Network.client.get("${Network.HOST}/api/workout/$userId") {
+            val result = Network.client.get("${Network.HOST}/api/workout/user/$userId") {
                 addAuthHeader()
             }
             if (result.status != HttpStatusCode.OK){
                 error("Status: ${result.status}")
             }
             result.body()
+        }
+    }
+
+    suspend fun getWorkoutById(workoutId : Int?): Result<WorkoutDto> = withContext(Dispatchers.IO){
+        runCatching {
+            val result = Network.client.get("${Network.HOST}/api/workout/$workoutId"){
+                addAuthHeader()
+            }
+            if (result.status != HttpStatusCode.OK) {
+                error("Status: ${result.status}")
+            }
+            result.body()
+        }
+    }
+
+    suspend fun addExerciseSet(
+        workoutId: Long,
+        exerciseId: Long,
+        dto: ExerciseSetDto
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = Network.client.post(
+                "${Network.HOST}/api/exercise_sets/workout/$workoutId/exercise/$exerciseId") {
+                addAuthHeader()
+                contentType(ContentType.Application.Json)
+                setBody(dto)
+            }
+
+            if (response.status != HttpStatusCode.Created) {
+                val errorBody = response.bodyAsText()
+                throw Exception("Ошибка добавления подхода: ${response.status}, $errorBody")
+            }
+
+            Unit
+        }
+    }
+
+    suspend fun completeWorkout(workoutId: Int): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            val result = Network.client.put("${Network.HOST}/api/workout/complete/$workoutId") {
+                addAuthHeader()
+            }
+
+            if (result.status != HttpStatusCode.OK) {
+                val errorBody = result.bodyAsText()
+                throw Exception("Ошибка завершения тренировки: ${result.status}")
+            }
+
+            Unit
         }
     }
 

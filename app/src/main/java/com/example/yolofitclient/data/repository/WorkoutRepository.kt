@@ -1,7 +1,9 @@
 package com.example.yolofitclient.data.repository
 
+import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.data.source.WorkoutDataSource
 import com.example.yolofitclient.domain.entity.ExerciseEntity
+import com.example.yolofitclient.domain.entity.TrackingConfigEntity
 import com.example.yolofitclient.domain.entity.WorkoutEntity
 
 class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
@@ -40,6 +42,55 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
                 )
             }
         }
+    }
+
+    suspend fun getWorkoutById(id: Int): Result<WorkoutEntity> {
+        return workoutDataSource.getWorkoutById(id).mapCatching { dto ->
+            WorkoutEntity(
+                id = dto.id ?: 0,
+                userId = dto.userId ?: 0,
+                userName = dto.userName ?: "",
+                workoutDate = dto.workoutDate ?: "",
+                completed = dto.completed ?: false,
+                exercises = dto.exercises?.map { exerciseDto ->
+                    ExerciseEntity(
+                        id = exerciseDto.id ?: 0,
+                        name = exerciseDto.name ?: "",
+                        defaultSets = exerciseDto.defaultSets ?: 0,
+                        defaultReps = exerciseDto.defaultReps ?: 0,
+                        weightCoefficient = exerciseDto.weightCoefficient ?: "0",
+                        bodyZoneName = exerciseDto.bodyZoneName ?: "",
+                        trackingConfig = exerciseDto.trackingConfig?.let { configDto ->
+                            TrackingConfigEntity(
+                                id = configDto.id ?: 0,
+                                exerciseId = configDto.exerciseId ?: 0,
+                                exerciseName = configDto.exerciseName ?: "",
+                                jointIndices = configDto.jointIndices ?: "",
+                                angleDown = configDto.angleDown ?: 0.0,
+                                angleUp = configDto.angleUp ?: 0.0,
+                                countDirection = configDto.countDirection ?: "",
+                                minConfidence = configDto.minConfidence ?: 0.4,
+                                framesToConfirm = configDto.framesToConfirm ?: 3,
+                                description = configDto.description
+                            )
+                        }
+                    )
+                } ?: emptyList()
+            )
+
+        }
+    }
+
+    suspend fun addExerciseSet(
+        workoutId: Long,
+        exerciseId: Long,
+        dto: ExerciseSetDto
+    ): Result<Unit> {
+        return workoutDataSource.addExerciseSet(workoutId,exerciseId, dto)
+    }
+
+    suspend fun completeWorkout(workoutId: Int): Result<Unit> {
+        return workoutDataSource.completeWorkout(workoutId)
     }
 
 }

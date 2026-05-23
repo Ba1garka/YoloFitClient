@@ -1,7 +1,6 @@
 package com.example.yolofitclient.ui.screen.home
 
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -45,13 +44,20 @@ object HomeColors {
 
 @Composable
 fun HomeScreen(
-    onWorkoutStartClick: (Long) -> Unit = {},
+    onWorkoutStartClick: (Int) -> Unit = {},
+    refreshTrigger: Long = 0L,
     homeViewModel: HomeViewModel = viewModel()
 ) {
     val state by homeViewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         homeViewModel.loadTodayWorkouts()
+    }
+
+    LaunchedEffect(refreshTrigger) {
+        if (refreshTrigger > 0) {
+            homeViewModel.loadTodayWorkouts()
+        }
     }
 
     Box(
@@ -138,7 +144,7 @@ private fun ErrorState(state: HomeState.Error) {
 @Composable
 private fun ContentState(
     workouts: List<WorkoutEntity>,
-    onWorkoutStartClick: (Long) -> Unit
+    onWorkoutStartClick: (Int) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),

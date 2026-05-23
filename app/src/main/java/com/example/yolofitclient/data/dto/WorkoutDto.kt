@@ -6,10 +6,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class WorkoutDto(
     @SerialName("id")
-    val id: Long?,
+    val id: Int?,
 
     @SerialName("userId")
-    val userId: Long?,
+    val userId: Int?,
 
     @SerialName("userName")
     val userName: String? = null,

@@ -15,4 +15,6 @@ class ExerciseEntity(
     val weightCoefficient: String,
 
     val bodyZoneName: String,
+
+    val trackingConfig: TrackingConfigEntity? = null
 )

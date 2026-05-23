@@ -1,8 +1,8 @@
 package com.example.yolofitclient.domain.entity
 
 class WorkoutEntity(
-    val id: Long,
-    val userId: Long,
+    val id: Int,
+    val userId: Int,
     val userName: String,
     val workoutDate: String,
     val completed: Boolean,

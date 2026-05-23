@@ -83,4 +83,15 @@ dependencies {
     implementation(libs.datastore)
     implementation(libs.datastore.preferences)
 
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
+
+    val cameraxVersion = "1.3.0"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.19.2")
+
 }

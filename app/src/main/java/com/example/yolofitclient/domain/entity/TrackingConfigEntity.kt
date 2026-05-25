@@ -10,5 +10,7 @@ data class TrackingConfigEntity(
     val countDirection: String,
     val minConfidence: Double,
     val framesToConfirm: Int,
-    val description: String?
+    val description: String?,
+    val bendHint: String?,
+    val straightenHint: String?
 )

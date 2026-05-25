@@ -48,7 +48,8 @@ class AuthNetworkDataSource {
             height = height,
             weight = weight,
             fitnessLevel = fitnessLevel,
-            password = password
+            password = password,
+            goal = "BUILD_MUSCLE"
         )
         runCatching {
             val result = Network.client.post("${Network.HOST}/api/users/register"){

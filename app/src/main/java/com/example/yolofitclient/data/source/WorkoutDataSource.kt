@@ -16,7 +16,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 
 class WorkoutDataSource {
-
+    //TODO(растащить по датасурсам)
     suspend fun createWorkout(
         userId: Int?,
         workoutDate: String,
@@ -109,6 +109,20 @@ class WorkoutDataSource {
             }
 
             Unit
+        }
+    }
+
+    suspend fun getDailyCalories(userId: Int?): Result<Int> = withContext(Dispatchers.IO) {
+        runCatching {
+            val result = Network.client.get("${Network.HOST}/api/exercise_sets/calories/daily/$userId") {
+                addAuthHeader()
+            }
+
+            if (result.status != HttpStatusCode.OK) {
+                error("Status: ${result.status}")
+            }
+
+            result.body<Int>()
         }
     }
 

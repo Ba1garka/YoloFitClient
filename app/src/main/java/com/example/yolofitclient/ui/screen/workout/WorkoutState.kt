@@ -20,6 +20,7 @@ sealed interface WorkoutState {
         val completedSets: List<ExerciseSetDto> = emptyList(),
         val completedExercises: Set<Int> = emptySet(),
         val isSubmitting: Boolean = false,
+        val voiceHint: String? = null
     ) : WorkoutState {
         val currentExercise: ExerciseEntity?
             get() = exercises.getOrNull(currentExerciseIndex)

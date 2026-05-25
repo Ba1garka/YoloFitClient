@@ -95,6 +95,7 @@ fun HomeScreen(
             is HomeState.Loading -> LoadingState()
             is HomeState.Error -> ErrorState(currentState)
             is HomeState.Content -> ContentState(
+                state = currentState,
                 workouts = currentState.todayWorkouts,
                 onWorkoutStartClick = onWorkoutStartClick
             )
@@ -143,6 +144,7 @@ private fun ErrorState(state: HomeState.Error) {
 
 @Composable
 private fun ContentState(
+    state: HomeState.Content,
     workouts: List<WorkoutEntity>,
     onWorkoutStartClick: (Int) -> Unit
 ) {
@@ -153,6 +155,13 @@ private fun ContentState(
     ) {
         item {
             GreetingHeader()
+        }
+
+        item {
+            CaloriesProgressCard(
+                currentCalories = state.dailyCalories,
+                targetCalories = state.dailyCalorieTarget
+            )
         }
 
         item {
@@ -502,6 +511,136 @@ private fun WorkoutCard(
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun CaloriesProgressCard(
+    currentCalories: Int,
+    targetCalories: Int?
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = HomeColors.CardBackground
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            Brush.linearGradient(
+                colors = listOf(
+                    HomeColors.AccentOrange.copy(alpha = 0.3f),
+                    HomeColors.AccentBlue.copy(alpha = 0.2f)
+                ),
+                start = Offset(0f, 0f),
+                end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+            )
+        )
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    Icons.Default.LocalFireDepartment,
+                    contentDescription = null,
+                    tint = HomeColors.AccentOrange,
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "КАЛОРИИ",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = HomeColors.TextPrimary,
+                        letterSpacing = 1.sp
+                    )
+                )
+            }
+
+            if (targetCalories != null && targetCalories > 0) {
+                val progress = (currentCalories.toFloat() / targetCalories).coerceIn(0f, 1f)
+                val percentage = (progress * 100).toInt()
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(HomeColors.CardBorder)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(progress)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        HomeColors.AccentOrange,
+                                        Color(0xFFFF6B35),
+                                        HomeColors.AccentGreen
+                                    ),
+                                    startX = 0f,
+                                    endX = Float.POSITIVE_INFINITY,
+                                )
+                            )
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "$currentCalories ккал",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = HomeColors.AccentOrange,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Text(
+                        text = "$percentage%",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = HomeColors.AccentGreen,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Text(
+                        text = "$targetCalories ккал",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = HomeColors.TextSecondary
+                        )
+                    )
+                }
+            } else {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$currentCalories ккал",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = HomeColors.AccentOrange,
+                            fontSize = 28.sp
+                        )
+                    )
+                    Text(
+                        text = "Цель не задана",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = HomeColors.TextDim
+                        )
+                    )
                 }
             }
         }

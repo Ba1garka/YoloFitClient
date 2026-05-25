@@ -27,5 +27,8 @@ data class UserRegisterDto(
     val fitnessLevel: String?,
 
     @SerialName("password")
-    val password: String?
+    val password: String?,
+
+    @SerialName("goal")
+    var goal: String?,
 )

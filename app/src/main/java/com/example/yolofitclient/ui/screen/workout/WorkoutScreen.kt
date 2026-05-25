@@ -2,6 +2,7 @@ package com.example.yolofitclient.ui.screen.workout
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.domain.entity.ExerciseEntity
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
+import kotlinx.coroutines.delay
 
 object WorkoutScreenColors {
     val DarkBackground = Color(0xFF0D0E0D)
@@ -229,6 +231,8 @@ private fun ContentState(
     viewModel: WorkoutViewModel,
     onMarkExerciseCompleted: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Column(modifier = Modifier.fillMaxSize()) {
         ExerciseSelector(
             exercises = state.exercises,
@@ -238,6 +242,13 @@ private fun ContentState(
         )
 
         if (state.isAiMode && state.currentExercise?.trackingConfig != null) {
+
+            LaunchedEffect(state.currentExercise?.trackingConfig?.id) {
+                state.currentExercise?.trackingConfig?.let { config ->
+                    viewModel.initAiSession(context, config)
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -263,8 +274,39 @@ private fun ContentState(
                     onRepsUpdate = { reps ->
                         viewModel.updateAiReps(reps)
                     },
-                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp))
+                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp)),
+                    onAiFeedback = { angle, phase ->
+                        viewModel.processAiFeedback( angle, phase)
+                    },
                 )
+            }
+
+            state.voiceHint?.let { hint ->
+                LaunchedEffect(hint) {
+                    delay(3000)
+                    viewModel.clearHint()
+                }
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = WorkoutScreenColors.AccentGreen.copy(alpha = 0.2f)
+                    ),
+                    border = BorderStroke(1.dp, WorkoutScreenColors.AccentGreen.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.VolumeUp,
+                            null,
+                            tint = WorkoutScreenColors.AccentGreen,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(hint, color = WorkoutScreenColors.TextPrimary, fontSize = 13.sp)
+                    }
+                }
             }
         } else {
             ManualMode(
@@ -942,7 +984,7 @@ private fun ExerciseCompletedCard() {
         colors = CardDefaults.cardColors(
             containerColor = WorkoutScreenColors.AccentGreenDark.copy(alpha = 0.15f)
         ),
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             1.dp,
             WorkoutScreenColors.AccentGreen.copy(alpha = 0.3f)
         )

@@ -77,7 +77,9 @@ fun RegisterScreen(
                 height = userEntity.height,
                 weight = userEntity.weight,
                 fitnessLevel = userEntity.fitnessLevel,
-                photoUrl = userEntity.photoUrl
+                photoUrl = userEntity.photoUrl,
+                goal = userEntity.goal,
+                dailyCalorieTarget = userEntity.dailyCalorieTarget
             )
 
             if (userDto.name != null){
@@ -229,7 +231,6 @@ private fun RegisterContentState(
     Box(
         modifier = Modifier.fillMaxSize().background(AuthColors.Background)
     ) {
-
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
                 brush = Brush.radialGradient(
@@ -248,7 +249,6 @@ private fun RegisterContentState(
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp)
         ) {
-
             IconButton(
                 onClick = {
                     if (currentStep > 0) {

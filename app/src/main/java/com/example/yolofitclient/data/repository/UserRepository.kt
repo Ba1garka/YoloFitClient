@@ -35,7 +35,9 @@ class UserRepository(
                 gender = userDto.gender ?: throw Exception("Gender is null"),
                 height = userDto.height ?: throw Exception("Height is null"),
                 weight = userDto.weight ?: throw Exception("Weight is null"),
-                fitnessLevel = userDto.fitnessLevel ?: throw Exception("FitnessLevel is null")
+                fitnessLevel = userDto.fitnessLevel ?: throw Exception("FitnessLevel is null"),
+                goal = userDto.goal ?: throw Exception("Goal is null"),
+                dailyCalorieTarget = userDto.dailyCalorieTarget ?: throw Exception("DailyCalorieTarget is null")
             )
         }
     }

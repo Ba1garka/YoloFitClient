@@ -19,5 +19,9 @@ class UserEntity(
 
     val fitnessLevel: String,
 
-    val photoUrl: String? = null
+    val photoUrl: String? = null,
+
+    var goal: String,
+
+    var dailyCalorieTarget: String?
 )

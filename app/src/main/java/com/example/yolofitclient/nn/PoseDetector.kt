@@ -112,7 +112,7 @@ class PoseDetector(context: Context) {
             @Suppress("UNCHECKED_CAST")
             session?.run(mapOf("images" to tensor))
         } catch (e: Exception) {
-            Log.e("PoseDetector", "❌ Run error: ${e.message}")
+            Log.e("PoseDetector", "Run error: ${e.message}")
             null
         }
         tensor.close()

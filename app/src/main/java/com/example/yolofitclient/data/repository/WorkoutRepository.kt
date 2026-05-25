@@ -71,7 +71,9 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
                                 countDirection = configDto.countDirection ?: "",
                                 minConfidence = configDto.minConfidence ?: 0.4,
                                 framesToConfirm = configDto.framesToConfirm ?: 3,
-                                description = configDto.description
+                                description = configDto.description,
+                                bendHint = configDto.bendHint,
+                                straightenHint = configDto.straightenHint
                             )
                         }
                     )
@@ -93,4 +95,7 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
         return workoutDataSource.completeWorkout(workoutId)
     }
 
+    suspend fun getDailyCalories(userId: Int?): Result<Int> {
+        return workoutDataSource.getDailyCalories(userId)
+    }
 }

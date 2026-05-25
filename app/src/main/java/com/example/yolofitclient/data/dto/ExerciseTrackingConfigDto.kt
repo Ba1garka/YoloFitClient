@@ -33,5 +33,11 @@ data class ExerciseTrackingConfigDto(
     val framesToConfirm: Int?,
 
     @SerialName("description")
-    val description: String? = null
+    val description: String? = null,
+
+    @SerialName("bendHint")
+    val bendHint: String? = null,
+
+    @SerialName("straightenHint")
+    val straightenHint: String? = null
 )

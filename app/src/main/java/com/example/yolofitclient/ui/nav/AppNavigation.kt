@@ -96,7 +96,11 @@ fun AppNavigation() {
             }
             composable<ProfileRoute> {
                 ProfileScreen(
-
+                    onLogoutClick = {
+                        navController.navigate(LoginRoute) {
+                            popUpTo(LoginRoute)
+                        }
+                    }
                 )
             }
             composable<CreateWorkoutRoute> {

@@ -45,7 +45,7 @@ class ExerciseCounter(private val config: TrackingConfig) {
         lastAngle = calculateAngle(p1, p2, p3)
 
         if (phaseFrameCount % 10 == 0) {
-            Log.d("ExerciseCounter", "Угол: ${"%.1f".format(lastAngle)} | Фаза: $currentPhase | Пороги: ≤${config.angleDown} DOWN, ≥${config.angleUp} UP")
+            Log.d("ExerciseCounter", "Угол: ${"%.1f".format(lastAngle)} | Фаза: $currentPhase | Пороги: <=${config.angleDown} DOWN, >=${config.angleUp} UP")
         }
 
         if (config.countDirection == Direction.HOLD) {

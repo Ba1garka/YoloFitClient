@@ -27,12 +27,15 @@ import com.example.yolofitclient.nn.ExerciseCounter
 import com.example.yolofitclient.nn.PoseDetector
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
+import kotlin.math.acos
+import kotlin.math.sqrt
 
 @Composable
 fun CameraPoseComponent(
     trackingConfig: TrackingConfigEntity,
     onRepsUpdate: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAiFeedback: (angle: Double, phase: ExerciseCounter.Phase) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current
@@ -113,6 +116,24 @@ fun CameraPoseComponent(
                                 if (bitmap != null) {
                                     val result = detector.detect(bitmap)
 
+                                    val rawAngle = if (result.isNotEmpty()) {
+                                        val first = result[0]
+                                        val kps = first.keypoints
+                                        val (i1, i2, i3) = config.jointTriplet
+                                        val p1 = kps.getOrNull(i1)?.takeIf { it.conf > config.minConfidence }
+                                        val p2 = kps.getOrNull(i2)?.takeIf { it.conf > config.minConfidence }
+                                        val p3 = kps.getOrNull(i3)?.takeIf { it.conf > config.minConfidence }
+                                        if (p1 != null && p2 != null && p3 != null) {
+                                            calculateAngle(p1, p2, p3)
+                                        } else null
+                                    } else null
+
+                                    val instantPhase = when {
+                                        rawAngle != null && rawAngle <= config.angleDown -> ExerciseCounter.Phase.DOWN
+                                        rawAngle != null && rawAngle >= config.angleUp -> ExerciseCounter.Phase.UP
+                                        else -> null
+                                    }
+
                                     smoothedDetections = if (result.isNotEmpty() && smoothedDetections.isNotEmpty()) {
                                         val alpha = 0.85f
                                         result.mapIndexed { i, det ->
@@ -143,6 +164,10 @@ fun CameraPoseComponent(
                                     detections = smoothedDetections
                                     exerciseCounter.update(detections)
                                     onRepsUpdate(exerciseCounter.getCount())
+
+                                    if (rawAngle != null && instantPhase != null) {
+                                        onAiFeedback(rawAngle, instantPhase)
+                                    }
 
                                     bitmap.recycle()
                                 }
@@ -246,12 +271,12 @@ fun CameraPoseComponent(
                 }
                 val paintSub = Paint().apply {
                     color = android.graphics.Color.WHITE
-                    textSize = 30f
+                    textSize = 80f
                     isAntiAlias = true
                 }
 
-                val x = 30f
-                val y = size.height - 100f
+                val x = 60f
+                val y = size.height - 200f
                 drawRect(x - 10f, y - 70f, x + 300f, y + 50f, paintBg)
                 drawText("$count", x, y, paintText)
                 drawText(
@@ -337,4 +362,17 @@ private fun imageProxyToBitmap(image: ImageProxy): Bitmap? {
         Log.e("CameraPose", "Ошибка конвертации: ${e.message}")
         null
     }
+}
+
+private fun calculateAngle(p1: PoseDetector.Keypoint, p2: PoseDetector.Keypoint, p3: PoseDetector.Keypoint): Double {
+    val v1x = p1.x - p2.x
+    val v1y = p1.y - p2.y
+    val v2x = p3.x - p2.x
+    val v2y = p3.y - p2.y
+    val dot = v1x * v2x + v1y * v2y
+    val norm1 = sqrt((v1x * v1x + v1y * v1y).toDouble())
+    val norm2 = sqrt((v2x * v2x + v2y * v2y).toDouble())
+    if (norm1 == 0.0 || norm2 == 0.0) return 180.0
+    val cos = (dot / (norm1 * norm2)).coerceIn(-1.0, 1.0)
+    return Math.toDegrees(acos(cos))
 }

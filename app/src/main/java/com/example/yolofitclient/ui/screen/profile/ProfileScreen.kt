@@ -42,8 +42,8 @@ import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
 
 @Composable
 fun ProfileScreen(
-//    onSaveClick: (UserDto) -> Unit = {},
-//    onLogoutClick: () -> Unit = {}
+    onSaveClick: (UserDto?) -> Unit = {},
+    onLogoutClick: () -> Unit
 ) {
 
     var isEditing by remember { mutableStateOf(false) }
@@ -59,8 +59,8 @@ fun ProfileScreen(
     var showGenderDropdown by remember { mutableStateOf(false) }
     var showFitnessDropdown by remember { mutableStateOf(false) }
 
-    val genders = listOf("Мужской", "Женский")
-    val fitnessLevels = listOf("Начинающий", "Средний", "Продвинутый", "Профессионал")
+    val genders = listOf("male", "female")
+    val fitnessLevels = listOf("beginner", "intermediate", "advanced")
 
     var user by remember { mutableStateOf<UserDto?>(null) }
 
@@ -131,7 +131,7 @@ fun ProfileScreen(
                     IconButton(
                         onClick = {
                             if (isEditing) {
-                                // Сохраняем изменения
+
                                 val updatedUser = user?.copy(
                                     name = editedName,
                                     email = editedEmail.ifEmpty { null },
@@ -142,7 +142,7 @@ fun ProfileScreen(
                                     fitnessLevel = editedFitnessLevel,
                                     photoUrl = photoUri?.toString() ?: user!!.photoUrl
                                 )
-//                                onSaveClick(updatedUser)
+                                onSaveClick(updatedUser)
                             }
                             isEditing = !isEditing
                         },
@@ -165,15 +165,11 @@ fun ProfileScreen(
             // Аватар
             item {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(150.dp)
-                            .clip(CircleShape)
+                        modifier = Modifier.size(150.dp).clip(CircleShape)
                             .background(
                                 Brush.linearGradient(
                                     colors = listOf(
@@ -192,35 +188,26 @@ fun ProfileScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         if (photoUri != null) {
-                            // Выбранное фото
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(photoUri)
                                     .crossfade(true)
                                     .build(),
                                 contentDescription = "Аватар",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(3.dp)
-                                    .clip(CircleShape),
+                                modifier = Modifier.fillMaxSize().padding(3.dp).clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                         } else if (user?.photoUrl != null) {
-                            // Фото с сервера
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(user!!.photoUrl)
                                     .crossfade(true)
                                     .build(),
                                 contentDescription = "Аватар",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(3.dp)
-                                    .clip(CircleShape),
+                                modifier = Modifier.fillMaxSize().padding(3.dp).clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
-                            // Заглушка
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
@@ -232,10 +219,7 @@ fun ProfileScreen(
                         // Кнопка камеры при редактировании
                         if (isEditing) {
                             Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .offset(x = 8.dp, y = 8.dp)
-                                    .size(44.dp)
+                                modifier = Modifier.align(Alignment.BottomEnd).offset(x = 8.dp, y = 8.dp).size(44.dp)
                                     .clip(CircleShape)
                                     .background(AuthColors.AccentGreen)
                                     .border(3.dp, AuthColors.Background, CircleShape),
@@ -288,7 +272,6 @@ fun ProfileScreen(
                 SectionTitle("ЛИЧНАЯ ИНФОРМАЦИЯ")
             }
 
-            // Информационные поля
             item {
                 InfoField(
                     icon = Icons.Default.Email,
@@ -324,12 +307,10 @@ fun ProfileScreen(
                 )
             }
 
-            // Заголовок секции
             item {
                 SectionTitle("ФИЗИЧЕСКИЕ ПАРАМЕТРЫ")
             }
 
-            // Физические параметры
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -370,7 +351,6 @@ fun ProfileScreen(
                 )
             }
 
-            // Кнопки действий
             item {
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -387,7 +367,7 @@ fun ProfileScreen(
                                 fitnessLevel = editedFitnessLevel,
                                 photoUrl = photoUri?.toString() ?: user!!.photoUrl
                             )
-//                            onSaveClick(updatedUser)
+                            onSaveClick(updatedUser)
                             isEditing = false
                         },
                         modifier = Modifier
@@ -441,10 +421,11 @@ fun ProfileScreen(
                 }
 
                 OutlinedButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
+                    onClick = {
+                        onLogoutClick
+                        AuthLocalDataSource.clearToken()
+                    },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = DiagonalRoundedCornerShape(
                         topLeft = 16f,
                         topRight = 40f,
@@ -509,9 +490,7 @@ private fun InfoField(
         )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -538,10 +517,7 @@ private fun InfoField(
                     onValueChange = onEditValueChange,
                     modifier = Modifier.weight(1f),
                     placeholder = {
-                        Text(
-                            placeholder.ifEmpty { label },
-                            color = AuthColors.TextDim
-                        )
+                        Text(placeholder.ifEmpty { label }, color = AuthColors.TextDim)
                     },
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
@@ -594,15 +570,12 @@ private fun GenderField(
         )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .size(40.dp)
+                modifier = Modifier.size(40.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(
                         AuthColors.AccentGreen.copy(alpha = 0.15f)
@@ -631,10 +604,7 @@ private fun GenderField(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = gender ?: "",
-                            color = AuthColors.AccentGreen
-                        )
+                        Text(text = gender ?: "", color = AuthColors.AccentGreen)
                         Icon(
                             Icons.Default.ArrowDropDown,
                             contentDescription = null,
@@ -706,9 +676,7 @@ private fun PhysicalField(
         )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -804,9 +772,7 @@ private fun FitnessLevelField(
         )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -912,9 +878,7 @@ private fun EditTextField(
         )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {

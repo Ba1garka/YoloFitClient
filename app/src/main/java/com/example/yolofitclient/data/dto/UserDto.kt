@@ -31,5 +31,11 @@ data class UserDto(
     val fitnessLevel: String?,
 
     @SerialName("photoUrl")
-    val photoUrl: String? = null
+    val photoUrl: String? = null,
+
+    @SerialName("goal")
+    var goal: String?,
+
+    @SerialName("dailyCalorieTarget")
+    var dailyCalorieTarget: String?
 )

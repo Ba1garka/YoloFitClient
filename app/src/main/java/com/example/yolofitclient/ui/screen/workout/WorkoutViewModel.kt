@@ -1,13 +1,19 @@
 package com.example.yolofitclient.ui.screen.workout
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.data.repository.WorkoutRepository
 import com.example.yolofitclient.data.source.WorkoutDataSource
+import com.example.yolofitclient.domain.entity.TrackingConfig
+import com.example.yolofitclient.domain.entity.TrackingConfigEntity
 import com.example.yolofitclient.domain.usecase.CompleteWorkoutUseCase
 import com.example.yolofitclient.domain.usecase.GetWorkoutByIdUseCase
 import com.example.yolofitclient.domain.usecase.SubmitExerciseSetsUseCase
+import com.example.yolofitclient.nn.ExerciseCounter
+import com.example.yolofitclient.nn.FeedbackManager
+import com.example.yolofitclient.nn.PoseDetector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -183,5 +189,43 @@ class WorkoutViewModel(
 
     fun retry() {
         loadWorkout()
+    }
+
+
+
+
+    private var feedbackManager: FeedbackManager? = null
+    fun initAiSession(context: Context, config: TrackingConfigEntity) {
+        feedbackManager?.shutdown()
+        feedbackManager = FeedbackManager(context, config)
+        feedbackManager?.init()
+    }
+
+    fun processAiFeedback(
+        angle: Double,
+        phase: ExerciseCounter.Phase,
+    ) {
+        val state = _uiState.value
+        if (state !is WorkoutState.Content) return
+
+        val hint = feedbackManager?.analyzeAndGiveFeedback(
+            currentAngle = angle,
+            detectedPhase = phase
+        )
+        if (hint != null) {
+            _uiState.value = ( _uiState.value as? WorkoutState.Content)?.copy(voiceHint = hint)!!
+        }
+    }
+
+    fun clearHint() {
+        val state = _uiState.value
+        if (state is WorkoutState.Content) {
+            _uiState.value = state.copy(voiceHint = null)
+        }
+    }
+
+    override fun onCleared() {
+        feedbackManager?.shutdown()
+        super.onCleared()
     }
 }

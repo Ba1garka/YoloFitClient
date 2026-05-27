@@ -212,8 +212,7 @@ fun ExerciseCard(
     )
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
             .then(
                 if (isSelected) Modifier.border(
                     2.dp,
@@ -246,7 +245,6 @@ fun ExerciseCard(
         onClick = onClick
     ) {
         Box {
-
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -261,9 +259,7 @@ fun ExerciseCard(
             )
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -309,17 +305,16 @@ fun ExerciseCard(
                     )
                 }
 
-                // Информация об упражнении
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
                         text = exercise.name,
                         style = MaterialTheme.typography.displayMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = ExerciseColors.TextPrimary,
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             letterSpacing = 0.5.sp
                         )
                     )
@@ -328,6 +323,7 @@ fun ExerciseCard(
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = ExerciseColors.AccentGreen,
                             fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
                             letterSpacing = 1.sp
                         )
                     )
@@ -347,7 +343,7 @@ fun ExerciseCard(
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         ParameterChip(label = "Подходы", value = "${exercise.defaultSets}")
                         ParameterChip(label = "Повторы", value = "${exercise.defaultReps}")
@@ -397,7 +393,7 @@ private fun ParameterChip(
                     )
                 )
             )
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .padding(horizontal = 5.dp, vertical = 5.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -408,7 +404,7 @@ private fun ParameterChip(
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = ExerciseColors.AccentGreen,
-                    fontSize = 20.sp
+                    fontSize = 18.sp
                 ),
                 textAlign = TextAlign.Center
             )

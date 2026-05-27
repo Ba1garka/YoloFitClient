@@ -42,6 +42,7 @@ import com.example.yolofitclient.ui.screen.createworkout.CreateWorkoutScreen
 import com.example.yolofitclient.ui.screen.exercise.SharedWorkoutViewModel
 import com.example.yolofitclient.ui.screen.home.HomeScreen
 import com.example.yolofitclient.ui.screen.workout.WorkoutScreen
+import com.example.yolofitclient.ui.screen.workoutdetails.WorkoutDetailScreen
 
 
 @Composable
@@ -98,7 +99,7 @@ fun AppNavigation() {
                 ProfileScreen(
                     onLogoutClick = {
                         navController.navigate(LoginRoute) {
-                            popUpTo(LoginRoute)
+                            popUpTo(LoginRoute) { inclusive = true }
                         }
                     }
                 )
@@ -126,6 +127,10 @@ fun AppNavigation() {
                     onWorkoutStartClick = { workoutId ->
                         sharedWorkoutViewModel.setWorkoutId(workoutId)
                         navController.navigate(WorkoutRoute)
+                    },
+                    onWorkoutDetailClick = { workoutId ->
+                        sharedWorkoutViewModel.setWorkoutId(workoutId)
+                        navController.navigate(WorkoutDetailRoute)
                     }
                 )
             }
@@ -145,6 +150,13 @@ fun AppNavigation() {
                         sharedWorkoutViewModel.clearWorkoutId()
                         navController.popBackStack()
                     }
+                )
+            }
+            composable<WorkoutDetailRoute> {
+                val workoutId by sharedWorkoutViewModel.selectedWorkoutId.collectAsState()
+                WorkoutDetailScreen(
+                    workoutId = workoutId ?: 0,
+                    onBack = { navController.popBackStack() }
                 )
             }
 

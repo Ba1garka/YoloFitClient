@@ -3,7 +3,9 @@ package com.example.yolofitclient.data.repository
 import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.data.source.WorkoutDataSource
 import com.example.yolofitclient.domain.entity.ExerciseEntity
+import com.example.yolofitclient.domain.entity.ExerciseSetDetailEntity
 import com.example.yolofitclient.domain.entity.TrackingConfigEntity
+import com.example.yolofitclient.domain.entity.WorkoutDetailEntity
 import com.example.yolofitclient.domain.entity.WorkoutEntity
 
 class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
@@ -97,5 +99,29 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
 
     suspend fun getDailyCalories(userId: Int?): Result<Int> {
         return workoutDataSource.getDailyCalories(userId)
+    }
+
+    suspend fun getWorkoutDetail(id: Int) : Result<WorkoutDetailEntity> {
+        return workoutDataSource.getWorkoutDetail(id).mapCatching { dto ->
+            WorkoutDetailEntity(
+                id = dto.id ?: 0,
+                userId = dto.userId ?: 0,
+                userName = dto.userName,
+                workoutDate = dto.workoutDate ?: "",
+                completed = dto.completed ?: false,
+                totalCalories = dto.totalCalories ?: 0.0,
+                exerciseSets = dto.exerciseSets?.map { setDto ->
+                    ExerciseSetDetailEntity(
+                        id = setDto.id ?: 0,
+                        exerciseName = setDto.exerciseName ?: "",
+                        setNumber = setDto.setNumber ?: 0,
+                        repsDone = setDto.repsDone,
+                        weightDone = setDto.weightDone,
+                        caloriesBurned = setDto.caloriesBurned ?: 0.0,
+                        mistakeCount = setDto.mistakeCount ?: 0,
+                    )
+                } ?: emptyList()
+            )
+        }
     }
 }

@@ -4,15 +4,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ExerciseSetDto(
+data class ExerciseSetDetailDto(
     @SerialName("id")
     val id: Int?,
-
-    @SerialName("workoutId")
-    val workoutId: Long,
-
-    @SerialName("exerciseId")
-    val exerciseId: Long,
 
     @SerialName("exerciseName")
     val exerciseName: String?,
@@ -21,14 +15,14 @@ data class ExerciseSetDto(
     val setNumber: Int?,
 
     @SerialName("repsDone")
-    val repsDone: Int? = null,
+    val repsDone: Int?,
 
     @SerialName("weightDone")
-    val weightDone: Double? = null,
+    val weightDone: Double?,
+
+    @SerialName("caloriesBurned")
+    val caloriesBurned: Double? = 0.0,
 
     @SerialName("mistakeCount")
     val mistakeCount: Int? = 0,
-
-    @SerialName("caloriesBurned")
-    val caloriesBurned: Double?
 )

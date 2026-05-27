@@ -1,8 +1,10 @@
 package com.example.yolofitclient.ui.screen.home
 
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -46,7 +48,8 @@ object HomeColors {
 fun HomeScreen(
     onWorkoutStartClick: (Int) -> Unit = {},
     refreshTrigger: Long = 0L,
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel = viewModel(),
+    onWorkoutDetailClick: (Int) -> Unit
 ) {
     val state by homeViewModel.uiState.collectAsState()
 
@@ -97,7 +100,8 @@ fun HomeScreen(
             is HomeState.Content -> ContentState(
                 state = currentState,
                 workouts = currentState.todayWorkouts,
-                onWorkoutStartClick = onWorkoutStartClick
+                onWorkoutStartClick = onWorkoutStartClick,
+                onWorkoutDetailClick = onWorkoutDetailClick
             )
         }
     }
@@ -146,7 +150,8 @@ private fun ErrorState(state: HomeState.Error) {
 private fun ContentState(
     state: HomeState.Content,
     workouts: List<WorkoutEntity>,
-    onWorkoutStartClick: (Int) -> Unit
+    onWorkoutStartClick: (Int) -> Unit,
+    onWorkoutDetailClick: (Int) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -184,7 +189,8 @@ private fun ContentState(
             items(workouts, key = { it.id }) { workout ->
                 WorkoutCard(
                     workout = workout,
-                    onStartClick = { onWorkoutStartClick(workout.id) }
+                    onStartClick = { onWorkoutStartClick(workout.id) },
+                    onWorkoutDetailClick = onWorkoutDetailClick
                 )
             }
         }
@@ -351,7 +357,8 @@ private fun NoWorkoutsCard() {
 @Composable
 private fun WorkoutCard(
     workout: WorkoutEntity,
-    onStartClick: () -> Unit
+    onStartClick: () -> Unit,
+    onWorkoutDetailClick: (Int) -> Unit
 ) {
     val cardShape = DiagonalRoundedCornerShape(
         topLeft = 40f,
@@ -361,12 +368,12 @@ private fun WorkoutCard(
     )
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable( onClick = { onWorkoutDetailClick(workout.id) }),
         shape = cardShape,
         colors = CardDefaults.cardColors(
             containerColor = HomeColors.CardBackground
         ),
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             1.dp,
             Brush.linearGradient(
                 colors = listOf(

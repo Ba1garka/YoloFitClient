@@ -109,7 +109,8 @@ class WorkoutViewModel(
                 }.size + 1,
                 repsDone = state.currentReps,
                 weightDone = state.currentWeight.toDoubleOrNull(),
-                mistakeCount = 0
+                mistakeCount = 0,
+                caloriesBurned = 0.0
             )
 
             _uiState.value = state.copy(

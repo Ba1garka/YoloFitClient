@@ -2,6 +2,7 @@ package com.example.yolofitclient.data.source
 
 import com.example.yolofitclient.data.dto.CreateWorkoutDto
 import com.example.yolofitclient.data.dto.ExerciseSetDto
+import com.example.yolofitclient.data.dto.WorkoutDetailDto
 import com.example.yolofitclient.data.dto.WorkoutDto
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -123,6 +124,21 @@ class WorkoutDataSource {
             }
 
             result.body<Int>()
+        }
+    }
+
+    suspend fun getWorkoutDetail(workoutId: Int): Result<WorkoutDetailDto> = withContext(Dispatchers.IO) {
+        runCatching {
+            val result = Network.client.get("${Network.HOST}/api/workout/$workoutId/detail") {
+                addAuthHeader()
+            }
+
+            if (result.status != HttpStatusCode.OK) {
+                error("Status: ${result.status}")
+            }
+
+            result.body<WorkoutDetailDto>()
+
         }
     }
 

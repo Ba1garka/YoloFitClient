@@ -370,9 +370,7 @@ fun ProfileScreen(
                             onSaveClick(updatedUser)
                             isEditing = false
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
                         shape = DiagonalRoundedCornerShape(
                             topLeft = 40f,
                             topRight = 16f,
@@ -385,8 +383,7 @@ fun ProfileScreen(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
+                            modifier = Modifier.fillMaxSize()
                                 .background(
                                     Brush.linearGradient(
                                         colors = listOf(
@@ -422,7 +419,7 @@ fun ProfileScreen(
 
                 OutlinedButton(
                     onClick = {
-                        onLogoutClick
+                        onLogoutClick()
                         AuthLocalDataSource.clearToken()
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),

@@ -278,12 +278,14 @@ fun ContentState(
         ) {
             Text(
                 text = "Нет аккаунта? ",
-                color = AuthColors.TextSecondary
+                color = AuthColors.TextSecondary,
+                fontSize = 12.sp
             )
             Text(
                 text = "Зарегистрироваться",
                 color = AuthColors.AccentGreen,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp
             )
         }
     }

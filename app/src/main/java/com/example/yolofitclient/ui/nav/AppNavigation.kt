@@ -38,6 +38,7 @@ import com.example.yolofitclient.ui.screen.register.RegisterScreen
 import androidx.compose.material3.Icon
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.example.yolofitclient.ui.screen.calendar.CalendarScreen
 import com.example.yolofitclient.ui.screen.createworkout.CreateWorkoutScreen
 import com.example.yolofitclient.ui.screen.exercise.SharedWorkoutViewModel
 import com.example.yolofitclient.ui.screen.home.HomeScreen
@@ -97,6 +98,7 @@ fun AppNavigation() {
             }
             composable<ProfileRoute> {
                 ProfileScreen(
+                    sharedWorkoutViewModel = sharedWorkoutViewModel,
                     onLogoutClick = {
                         navController.navigate(LoginRoute) {
                             popUpTo(LoginRoute) { inclusive = true }
@@ -120,10 +122,7 @@ fun AppNavigation() {
                 )
             }
             composable<HomeRoute> {
-                val refreshTrigger by sharedWorkoutViewModel.refreshHomeTrigger.collectAsState()
-
                 HomeScreen(
-                    refreshTrigger = refreshTrigger,
                     onWorkoutStartClick = { workoutId ->
                         sharedWorkoutViewModel.setWorkoutId(workoutId)
                         navController.navigate(WorkoutRoute)
@@ -140,7 +139,6 @@ fun AppNavigation() {
                 WorkoutScreen(
                     workoutId = workoutId ?: 0,
                     onFinish = {
-                        sharedWorkoutViewModel.triggerHomeRefresh()
                         sharedWorkoutViewModel.clearWorkoutId()
                         navController.navigate(HomeRoute) {
                             popUpTo(HomeRoute) { inclusive = true }
@@ -159,6 +157,14 @@ fun AppNavigation() {
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable<CalendarRoute>{
+                CalendarScreen(
+                    onWorkoutClick = { workoutId ->
+                        sharedWorkoutViewModel.setWorkoutId(workoutId)
+                        navController.navigate(WorkoutDetailRoute)
+                    }
+                )
+            }
 
         }
 
@@ -166,6 +172,7 @@ fun AppNavigation() {
             ExerciseListRoute::class.qualifiedName,
             ProfileRoute::class.qualifiedName,
             HomeRoute::class.qualifiedName,
+            CalendarRoute::class.qualifiedName
         )
 
         if (showBottomBar) {
@@ -201,6 +208,11 @@ fun BottomNavBar(
             route = HomeRoute::class.qualifiedName ?: "home",
             icon = Icons.Default.Home,
             label = "Дом"
+        ),
+        BottomNavItem(
+            route = CalendarRoute::class.qualifiedName ?: "calendar",
+            icon = Icons.Default.Event,
+            label = "Календарь"
         )
     )
 
@@ -301,6 +313,13 @@ fun BottomNavBar(
                                             restoreState = true
                                         }
                                         items[2].route -> navController.navigate(HomeRoute) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                        items[3].route -> navController.navigate(CalendarRoute){
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
                                             }

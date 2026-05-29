@@ -1,10 +1,13 @@
 package com.example.yolofitclient.data.source
 
+import com.example.yolofitclient.data.dto.CreateWorkoutDto
 import com.example.yolofitclient.data.dto.UserDto
 import com.example.yolofitclient.data.dto.UserRegisterDto
+import com.example.yolofitclient.domain.entity.UserEntity
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -65,4 +68,30 @@ class AuthNetworkDataSource {
         }
     }
 
+    suspend fun updateUser(
+        user: UserDto,
+    ): Result<UserDto> = withContext(Dispatchers.IO) {
+
+        runCatching {
+            val result = Network.client.put("${Network.HOST}/api/users/update/${user.id}") {
+                addAuthHeader()
+                contentType(ContentType.Application.Json)
+                setBody(user)
+            }
+
+            if (result.status == HttpStatusCode.Conflict) {
+                val errorBody = result.bodyAsText()
+                println("409 Conflict: $errorBody")
+                throw Exception(errorBody)
+            }
+
+            if (result.status != HttpStatusCode.OK) {
+                val errorBody = result.bodyAsText()
+                throw Exception("Ошибка обновления профиля: ${result.status}")
+            }
+
+            result.body<UserDto>()
+        }
+
+    }
 }

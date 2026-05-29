@@ -12,9 +12,6 @@ class SharedWorkoutViewModel : ViewModel() {
     private val _selectedWorkoutId = MutableStateFlow<Int?>(null)
     val selectedWorkoutId: StateFlow<Int?> = _selectedWorkoutId.asStateFlow()
 
-    private val _refreshHomeTrigger = MutableStateFlow(0L)
-    val refreshHomeTrigger: StateFlow<Long> = _refreshHomeTrigger.asStateFlow()
-
     fun setSelectedIds(ids: List<Int>) {
         _selectedIds.value = ids.toList()
     }
@@ -31,7 +28,4 @@ class SharedWorkoutViewModel : ViewModel() {
         _selectedWorkoutId.value = null
     }
 
-    fun triggerHomeRefresh() {
-        _refreshHomeTrigger.value = System.currentTimeMillis()
-    }
 }

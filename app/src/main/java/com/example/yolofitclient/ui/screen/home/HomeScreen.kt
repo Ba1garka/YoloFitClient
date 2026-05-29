@@ -1,6 +1,7 @@
 package com.example.yolofitclient.ui.screen.home
 
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +27,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.yolofitclient.data.dto.UserDto
+import com.example.yolofitclient.data.source.AuthLocalDataSource
 import com.example.yolofitclient.domain.entity.WorkoutEntity
+import com.example.yolofitclient.ui.screen.profile.ProfileState
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
 import java.text.SimpleDateFormat
 import java.util.*
@@ -47,20 +52,13 @@ object HomeColors {
 @Composable
 fun HomeScreen(
     onWorkoutStartClick: (Int) -> Unit = {},
-    refreshTrigger: Long = 0L,
     homeViewModel: HomeViewModel = viewModel(),
-    onWorkoutDetailClick: (Int) -> Unit
+    onWorkoutDetailClick: (Int) -> Unit,
 ) {
     val state by homeViewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         homeViewModel.loadTodayWorkouts()
-    }
-
-    LaunchedEffect(refreshTrigger) {
-        if (refreshTrigger > 0) {
-            homeViewModel.loadTodayWorkouts()
-        }
     }
 
     Box(
@@ -101,7 +99,7 @@ fun HomeScreen(
                 state = currentState,
                 workouts = currentState.todayWorkouts,
                 onWorkoutStartClick = onWorkoutStartClick,
-                onWorkoutDetailClick = onWorkoutDetailClick
+                onWorkoutDetailClick = onWorkoutDetailClick,
             )
         }
     }
@@ -151,7 +149,7 @@ private fun ContentState(
     state: HomeState.Content,
     workouts: List<WorkoutEntity>,
     onWorkoutStartClick: (Int) -> Unit,
-    onWorkoutDetailClick: (Int) -> Unit
+    onWorkoutDetailClick: (Int) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -216,7 +214,7 @@ private fun GreetingHeader() {
         colors = CardDefaults.cardColors(
             containerColor = HomeColors.CardBackground
         ),
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             1.dp,
             Brush.linearGradient(
                 colors = listOf(
@@ -301,7 +299,7 @@ private fun NoWorkoutsCard() {
         colors = CardDefaults.cardColors(
             containerColor = HomeColors.CardBackground
         ),
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             1.dp,
             HomeColors.CardBorder
         )

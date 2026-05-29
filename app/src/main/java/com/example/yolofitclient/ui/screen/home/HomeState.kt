@@ -8,6 +8,6 @@ sealed interface HomeState {
     data class Content(
         val todayWorkouts: List<WorkoutEntity>,
         val dailyCalories: Int = 0,
-        val dailyCalorieTarget: Int?
+        var dailyCalorieTarget: Int?
     ) : HomeState
 }

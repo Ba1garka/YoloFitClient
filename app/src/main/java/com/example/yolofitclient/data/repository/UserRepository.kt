@@ -1,5 +1,6 @@
 package com.example.yolofitclient.data.repository
 
+import com.example.yolofitclient.data.dto.UserDto
 import com.example.yolofitclient.data.source.AuthNetworkDataSource
 import com.example.yolofitclient.domain.entity.UserEntity
 
@@ -40,5 +41,13 @@ class UserRepository(
                 dailyCalorieTarget = userDto.dailyCalorieTarget ?: throw Exception("DailyCalorieTarget is null")
             )
         }
+    }
+
+    suspend fun updateUser(
+        user: UserDto
+    ): Result<UserDto> {
+        return authNetworkDataSource.updateUser(
+            user = user,
+        )
     }
 }

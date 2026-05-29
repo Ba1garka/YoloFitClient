@@ -1,6 +1,7 @@
 package com.example.yolofitclient.ui.screen.profile
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -31,23 +32,27 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.yolofitclient.data.dto.UserDto
 import com.example.yolofitclient.data.source.AuthLocalDataSource
+import com.example.yolofitclient.ui.screen.exercise.SharedWorkoutViewModel
 import com.example.yolofitclient.ui.theme.AuthColors
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
 
 
 @Composable
 fun ProfileScreen(
-    onSaveClick: (UserDto?) -> Unit = {},
-    onLogoutClick: () -> Unit
+    sharedWorkoutViewModel: SharedWorkoutViewModel,
+    onLogoutClick: () -> Unit,
+    viewModel: ProfileViewModel = viewModel<ProfileViewModel>()
 ) {
+    val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     var isEditing by remember { mutableStateOf(false) }
-    var editedName by remember { mutableStateOf("") }
     var editedEmail by remember { mutableStateOf("") }
     var editedBirthDate by remember { mutableStateOf("") }
     var editedGender by remember { mutableStateOf("") }
@@ -67,6 +72,19 @@ fun ProfileScreen(
     LaunchedEffect(Unit) {
         val currentUser = AuthLocalDataSource.getCurrentUser()
         user = currentUser
+    }
+
+    LaunchedEffect(state) {
+        when (state) {
+            is ProfileState.Success -> {
+                user = AuthLocalDataSource.getCurrentUser()
+                isEditing = false
+            }
+            is ProfileState.Error -> {
+                Toast.makeText(context, (state as ProfileState.Error).reason, Toast.LENGTH_LONG).show()
+            }
+            else -> {}
+        }
     }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -132,17 +150,16 @@ fun ProfileScreen(
                         onClick = {
                             if (isEditing) {
 
-                                val updatedUser = user?.copy(
-                                    name = editedName,
-                                    email = editedEmail.ifEmpty { null },
-                                    birthDate = editedBirthDate.ifEmpty { null },
-                                    gender = editedGender,
-                                    height = editedHeight,
-                                    weight = editedWeight,
-                                    fitnessLevel = editedFitnessLevel,
+                                val updatedUser = user!!.copy(
+                                    email = editedEmail.ifEmpty { user!!.email },
+                                    birthDate = editedBirthDate.ifEmpty { user!!.birthDate },
+                                    gender = editedGender.ifEmpty { user!!.gender },
+                                    height = editedHeight.ifEmpty { user!!.height },
+                                    weight = editedWeight.ifEmpty { user!!.weight },
+                                    fitnessLevel = editedFitnessLevel.ifEmpty { user!!.fitnessLevel },
                                     photoUrl = photoUri?.toString() ?: user!!.photoUrl
                                 )
-                                onSaveClick(updatedUser)
+                                viewModel.updateUser(updatedUser)
                             }
                             isEditing = !isEditing
                         },
@@ -198,6 +215,7 @@ fun ProfileScreen(
                                 contentScale = ContentScale.Crop
                             )
                         } else if (user?.photoUrl != null) {
+                            println("Фото пользователя ${user!!.photoUrl}")
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(user!!.photoUrl)
@@ -237,16 +255,7 @@ fun ProfileScreen(
                 }
             }
 
-            // Имя (всегда показываем)
             item {
-                if (isEditing) {
-                    EditTextField(
-                        value = editedName ?: "",
-                        onValueChange = { editedName = it },
-                        label = "Имя",
-                        icon = Icons.Default.Person
-                    )
-                } else {
                     Text(
                         text = user?.name ?: "",
                         style = MaterialTheme.typography.headlineMedium.copy(
@@ -265,7 +274,6 @@ fun ProfileScreen(
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
-                }
             }
 
             item {
@@ -357,17 +365,16 @@ fun ProfileScreen(
                 if (isEditing) {
                     Button(
                         onClick = {
-                            val updatedUser = user?.copy(
-                                name = editedName,
-                                email = editedEmail.ifEmpty { null },
-                                birthDate = editedBirthDate.ifEmpty { null },
-                                gender = editedGender,
-                                height = editedHeight,
-                                weight = editedWeight,
-                                fitnessLevel = editedFitnessLevel,
+                            val updatedUser = user!!.copy(
+                                email = editedEmail.ifEmpty { user!!.email },
+                                birthDate = editedBirthDate.ifEmpty { user!!.birthDate },
+                                gender = editedGender.ifEmpty { user!!.gender},
+                                height = editedHeight.ifEmpty { user!!.height},
+                                weight = editedWeight.ifEmpty { user!!.weight },
+                                fitnessLevel = editedFitnessLevel.ifEmpty { user!!.fitnessLevel },
                                 photoUrl = photoUri?.toString() ?: user!!.photoUrl
                             )
-                            onSaveClick(updatedUser)
+                            viewModel.updateUser(updatedUser)
                             isEditing = false
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),

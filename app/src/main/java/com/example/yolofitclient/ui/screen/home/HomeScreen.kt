@@ -292,7 +292,7 @@ private fun GreetingHeader() {
 }
 
 @Composable
-private fun NoWorkoutsCard() {
+fun NoWorkoutsCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -332,7 +332,7 @@ private fun NoWorkoutsCard() {
             }
 
             Text(
-                text = "Нет тренировок на сегодня",
+                text = "Нет тренировок",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = HomeColors.TextPrimary,

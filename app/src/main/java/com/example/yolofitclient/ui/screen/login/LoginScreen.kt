@@ -52,7 +52,6 @@ import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
 fun LoginScreen(
     navController : NavController,
     viewModel: LoginViewModel = viewModel(),
-    onLoginSuccess: () -> Unit,
     toRegister : () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -62,7 +61,6 @@ fun LoginScreen(
             when(action){
                 is LoginAction.OpenScreen -> {
                     navController.navigate(action.route)
-//                    onLoginSuccess()
                 }
             }
         }
@@ -101,7 +99,7 @@ fun LoginScreen(
 
         when(val currentState = state){
             is LoginState.Loading -> LoadingState()
-            is LoginState.Data -> ContentState(onLoginSuccess, toRegister, currentState, viewModel)
+            is LoginState.Data -> ContentState( toRegister, currentState, viewModel)
         }
     }
 }
@@ -131,7 +129,6 @@ private fun LoadingState() {
 
 @Composable
 fun ContentState(
-    onLoginSuccess : () -> Unit,
     toRegister : () -> Unit,
     currentState : LoginState.Data,
     viewModel: LoginViewModel

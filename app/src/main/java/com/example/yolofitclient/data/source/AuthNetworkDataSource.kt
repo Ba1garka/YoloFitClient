@@ -40,7 +40,8 @@ class AuthNetworkDataSource {
         height: String,
         weight: String,
         fitnessLevel: String,
-        password: String
+        password: String,
+        goal: String
     ): Result<UserDto> = withContext(Dispatchers.IO) { //TODO in own datasourse
 
         val requestBody = UserRegisterDto(
@@ -52,7 +53,7 @@ class AuthNetworkDataSource {
             weight = weight,
             fitnessLevel = fitnessLevel,
             password = password,
-            goal = "BUILD_MUSCLE"
+            goal = goal
         )
         runCatching {
             val result = Network.client.post("${Network.HOST}/api/users/register"){

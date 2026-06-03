@@ -5,6 +5,7 @@ import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.data.dto.WorkoutDetailDto
 import com.example.yolofitclient.data.dto.WorkoutDto
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import okhttp3.Dispatcher
 
 class WorkoutDataSource {
     //TODO(растащить по датасурсам)
@@ -142,4 +144,17 @@ class WorkoutDataSource {
         }
     }
 
+    suspend fun deleteWorkout(id: Int): Result<Unit> = withContext(Dispatchers.IO){
+        runCatching {
+            val result = Network.client.delete("${Network.HOST}/api/workout/delete/$id"){
+                addAuthHeader()
+            }
+
+            if (result.status != HttpStatusCode.OK && result.status != HttpStatusCode.NoContent) {
+                error("Status: ${result.status}")
+            }
+
+            result.body<Unit>()
+        }
+    }
 }

@@ -45,7 +45,6 @@ import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
 
 @Composable
 fun ProfileScreen(
-    sharedWorkoutViewModel: SharedWorkoutViewModel,
     onLogoutClick: () -> Unit,
     viewModel: ProfileViewModel = viewModel<ProfileViewModel>()
 ) {
@@ -60,12 +59,15 @@ fun ProfileScreen(
     var editedWeight by remember { mutableStateOf("") }
     var editedFitnessLevel by remember { mutableStateOf("") }
     var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var editedGoal by remember { mutableStateOf("") }
 
     var showGenderDropdown by remember { mutableStateOf(false) }
     var showFitnessDropdown by remember { mutableStateOf(false) }
+    var showGoalsDropdown by remember { mutableStateOf(false) }
 
     val genders = listOf("male", "female")
     val fitnessLevels = listOf("beginner", "intermediate", "advanced")
+    val goals = listOf("LOSE_WEIGHT","GAIN_WEIGHT","BUILD_MUSCLE")
 
     var user by remember { mutableStateOf<UserDto?>(null) }
 
@@ -157,7 +159,8 @@ fun ProfileScreen(
                                     height = editedHeight.ifEmpty { user!!.height },
                                     weight = editedWeight.ifEmpty { user!!.weight },
                                     fitnessLevel = editedFitnessLevel.ifEmpty { user!!.fitnessLevel },
-                                    photoUrl = photoUri?.toString() ?: user!!.photoUrl
+                                    photoUrl = photoUri?.toString() ?: user!!.photoUrl,
+                                    goal = editedGoal.ifEmpty { user!!.goal }
                                 )
                                 viewModel.updateUser(updatedUser)
                             }
@@ -355,12 +358,27 @@ fun ProfileScreen(
                     onLevelChange = { editedFitnessLevel = it },
                     levels = fitnessLevels,
                     showDropdown = showFitnessDropdown,
-                    onDropdownToggle = { showFitnessDropdown = it }
+                    onDropdownToggle = { showFitnessDropdown = it },
+                    "Уровень подготовки",
+                    Icons.Default.TrendingUp
                 )
             }
 
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                FitnessLevelField(
+                    isEditing = isEditing,
+                    fitnessLevel = if (isEditing) editedGoal else user?.goal,
+                    onLevelChange = { editedGoal = it },
+                    levels = goals,
+                    showDropdown = showGoalsDropdown,
+                    onDropdownToggle = { showGoalsDropdown = it },
+                    "Ваша цель",
+                    Icons.Default.GolfCourse
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
 
                 if (isEditing) {
                     Button(
@@ -372,7 +390,8 @@ fun ProfileScreen(
                                 height = editedHeight.ifEmpty { user!!.height},
                                 weight = editedWeight.ifEmpty { user!!.weight },
                                 fitnessLevel = editedFitnessLevel.ifEmpty { user!!.fitnessLevel },
-                                photoUrl = photoUri?.toString() ?: user!!.photoUrl
+                                photoUrl = photoUri?.toString() ?: user!!.photoUrl,
+                                goal = editedGoal.ifEmpty { user!!.goal }
                             )
                             viewModel.updateUser(updatedUser)
                             isEditing = false
@@ -766,7 +785,9 @@ private fun FitnessLevelField(
     onLevelChange: (String) -> Unit,
     levels: List<String>,
     showDropdown: Boolean,
-    onDropdownToggle: (Boolean) -> Unit
+    onDropdownToggle: (Boolean) -> Unit,
+    text: String,
+    icon: ImageVector
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -790,7 +811,7 @@ private fun FitnessLevelField(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.TrendingUp,
+                    imageVector = icon,
                     contentDescription = null,
                     tint = AuthColors.AccentGreen,
                     modifier = Modifier.size(20.dp)
@@ -848,7 +869,7 @@ private fun FitnessLevelField(
             } else {
                 Column {
                     Text(
-                        text = "Уровень подготовки",
+                        text = text,
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = AuthColors.TextDim,
                             fontSize = 11.sp

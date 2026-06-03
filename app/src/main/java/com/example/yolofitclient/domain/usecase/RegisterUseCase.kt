@@ -12,7 +12,8 @@ class RegisterUseCase( private val userRepository: UserRepository) {
         height: String,
         weight: String,
         fitnessLevel: String,
-        password: String
+        password: String,
+        goal: String
     ): Result<UserEntity>{
         return userRepository.register(
             name,
@@ -23,6 +24,7 @@ class RegisterUseCase( private val userRepository: UserRepository) {
             weight,
             fitnessLevel,
             password,
+            goal
         )
     }
 }

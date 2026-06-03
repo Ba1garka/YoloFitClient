@@ -42,6 +42,7 @@ import com.example.yolofitclient.ui.screen.calendar.CalendarScreen
 import com.example.yolofitclient.ui.screen.createworkout.CreateWorkoutScreen
 import com.example.yolofitclient.ui.screen.exercise.SharedWorkoutViewModel
 import com.example.yolofitclient.ui.screen.home.HomeScreen
+import com.example.yolofitclient.ui.screen.myworkout.MyWorkoutScreen
 import com.example.yolofitclient.ui.screen.workout.WorkoutScreen
 import com.example.yolofitclient.ui.screen.workoutdetails.WorkoutDetailScreen
 
@@ -86,11 +87,11 @@ fun AppNavigation() {
             composable<LoginRoute> {
                 LoginScreen(
                     navController,
-                    onLoginSuccess = {
-                        navController.navigate(ExerciseListRoute) {
-                            popUpTo(LoginRoute) { inclusive = true }
-                        }
-                    },
+//                    onLoginSuccess = {
+//                        navController.navigate(ExerciseListRoute) {
+//                            popUpTo(LoginRoute) { inclusive = true }
+//                        }
+//                    },
                     toRegister = {
                         navController.navigate(RegisterRoute)
                     }
@@ -98,7 +99,6 @@ fun AppNavigation() {
             }
             composable<ProfileRoute> {
                 ProfileScreen(
-                    sharedWorkoutViewModel = sharedWorkoutViewModel,
                     onLogoutClick = {
                         navController.navigate(LoginRoute) {
                             popUpTo(LoginRoute) { inclusive = true }
@@ -165,6 +165,14 @@ fun AppNavigation() {
                     }
                 )
             }
+            composable<MyWorkoutRoute> {
+                MyWorkoutScreen(
+                    onWorkoutClick = { id ->
+                        sharedWorkoutViewModel.setWorkoutId(id)
+                        navController.navigate(WorkoutDetailRoute)
+                    }
+                )
+            }
 
         }
 
@@ -172,7 +180,8 @@ fun AppNavigation() {
             ExerciseListRoute::class.qualifiedName,
             ProfileRoute::class.qualifiedName,
             HomeRoute::class.qualifiedName,
-            CalendarRoute::class.qualifiedName
+            CalendarRoute::class.qualifiedName,
+            MyWorkoutRoute::class.qualifiedName
         )
 
         if (showBottomBar) {
@@ -213,6 +222,11 @@ fun BottomNavBar(
             route = CalendarRoute::class.qualifiedName ?: "calendar",
             icon = Icons.Default.Event,
             label = "Календарь"
+        ),
+        BottomNavItem(
+            route = MyWorkoutRoute::class.qualifiedName ?: "myworkout",
+            icon = Icons.Default.Notes,
+            label = "МоиТренировки"
         )
     )
 
@@ -320,6 +334,13 @@ fun BottomNavBar(
                                             restoreState = true
                                         }
                                         items[3].route -> navController.navigate(CalendarRoute){
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                        items[4].route -> navController.navigate(MyWorkoutRoute){
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
                                             }

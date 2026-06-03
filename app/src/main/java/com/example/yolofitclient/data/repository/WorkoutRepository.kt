@@ -124,4 +124,8 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
             )
         }
     }
+
+    suspend fun deleteWorkout(id: Int) : Result<Unit> {
+        return workoutDataSource.deleteWorkout(id)
+    }
 }

@@ -16,7 +16,8 @@ class UserRepository(
         height: String,
         weight: String,
         fitnessLevel: String,
-        password: String
+        password: String,
+        goal: String
     ): Result<UserEntity>{
         return authNetworkDataSource.register(
             name,
@@ -27,6 +28,7 @@ class UserRepository(
             weight,
             fitnessLevel,
             password,
+            goal
         ).mapCatching { userDto ->
             UserEntity(
                 id = userDto.id ?: throw Exception("ID is null"),

@@ -28,6 +28,7 @@ class RegisterViewModel: ViewModel() {
         height: String,
         weight: String,
         fitnessLevel: String,
+        goal: String,
         onValidationError: (String) -> Unit
     ) {
         when {
@@ -102,6 +103,7 @@ class RegisterViewModel: ViewModel() {
             weight,
             fitnessLevel,
             password,
+            goal
         )
     }
 
@@ -140,7 +142,8 @@ class RegisterViewModel: ViewModel() {
         height: String,
         weight: String,
         fitnessLevel: String,
-        password: String
+        password: String,
+        goal: String
     ){
         viewModelScope.launch {
             _uiState.emit(RegisterState.Loading)
@@ -154,6 +157,7 @@ class RegisterViewModel: ViewModel() {
                 weight,
                 fitnessLevel,
                 password,
+                goal
             ).fold(
                 onSuccess = { user ->
                     _uiState.emit(RegisterState.Content(user))

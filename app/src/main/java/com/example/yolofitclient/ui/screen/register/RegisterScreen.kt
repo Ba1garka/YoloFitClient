@@ -55,6 +55,7 @@ fun RegisterScreen(
     var height by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var fitnessLevel by remember { mutableStateOf("beginner") }
+    var goal by remember {mutableStateOf("GAIN_WEIGHT")}
 
     var currentStep by remember { mutableIntStateOf(0) }
     var validationError by remember { mutableStateOf<String?>(null) }
@@ -63,6 +64,8 @@ fun RegisterScreen(
     val genders = listOf("male", "female")
     val fitnessLevels = listOf("beginner", "intermediate", "advanced")
     var showFitnessDropdown by remember { mutableStateOf(false) }
+    val goals = listOf("LOSE_WEIGHT","GAIN_WEIGHT","BUILD_MUSCLE")
+    var showGoalsDropdown by remember { mutableStateOf(false) }
 
     LaunchedEffect(state) {
         if (state is RegisterState.Content) {
@@ -137,6 +140,11 @@ fun RegisterScreen(
                 fitnessLevels = fitnessLevels,
                 showFitnessDropdown = showFitnessDropdown,
                 onFitnessDropdownToggle = { showFitnessDropdown = it },
+                goal = goal,
+                onGoalsChange = { goal = it },
+                goals = goals,
+                showGoalsDropdown = showGoalsDropdown,
+                onGoalsDropdownToggle = { showGoalsDropdown = it },
                 onRegisterClick = {
                     if (currentStep == 2) {
                         viewModel.validateAndRegister(
@@ -149,6 +157,7 @@ fun RegisterScreen(
                             password = password,
                             confirmPassword = confirmPassword,
                             name = name,
+                            goal = goal,
                             onValidationError = { errorMessage ->
                                 validationError = errorMessage
                                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
@@ -158,7 +167,7 @@ fun RegisterScreen(
                         currentStep++
                     }
                 },
-                onLoginClick = { onLoginClick() }
+                onLoginClick = { onLoginClick() },
             )
         }
 
@@ -180,9 +189,10 @@ fun RegisterScreen(
                         password = password,
                         confirmPassword = confirmPassword,
                         name = name,
+                        goal = goal,
                         onValidationError = { errorMessage ->
                             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                        }
+                        },
                     )
                 },
                 onBackToForm = { viewModel.resetState() }
@@ -225,6 +235,11 @@ private fun RegisterContentState(
     fitnessLevels: List<String>,
     showFitnessDropdown: Boolean,
     onFitnessDropdownToggle: (Boolean) -> Unit,
+    goal : String,
+    onGoalsChange : (String) -> Unit,
+    goals : List<String>,
+    showGoalsDropdown : Boolean,
+    onGoalsDropdownToggle : (Boolean) -> Unit,
     onRegisterClick: () -> Unit,
     onLoginClick: () -> Unit
 ) {
@@ -379,7 +394,12 @@ private fun RegisterContentState(
                         genders = genders,
                         fitnessLevels = fitnessLevels,
                         showFitnessDropdown = showFitnessDropdown,
-                        onFitnessDropdownToggle = onFitnessDropdownToggle
+                        onFitnessDropdownToggle = onFitnessDropdownToggle,
+                        goal = goal,
+                        onGoalsChange = onGoalsChange,
+                        goals = goals,
+                        showGoalsDropdown = showGoalsDropdown,
+                        onGoalsDropdownToggle = onGoalsDropdownToggle,
                     )
                     2 -> StepPassword(
                         password = password,
@@ -521,7 +541,12 @@ private fun StepPhysicalParams(
     genders: List<String>,
     fitnessLevels: List<String>,
     showFitnessDropdown: Boolean,
-    onFitnessDropdownToggle: (Boolean) -> Unit
+    onFitnessDropdownToggle: (Boolean) -> Unit,
+    goal : String,
+    onGoalsChange : (String) -> Unit,
+    goals: List<String>,
+    showGoalsDropdown : Boolean,
+    onGoalsDropdownToggle : (Boolean) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -662,6 +687,54 @@ private fun StepPhysicalParams(
                         onClick = {
                             onFitnessLevelChange(level)
                             onFitnessDropdownToggle(false)
+                        }
+                    )
+                }
+            }
+        }
+
+        Text(
+            text = "Цель ваших занятий",
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = AuthColors.TextSecondary,
+                letterSpacing = 1.sp
+            )
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(AuthColors.FieldBackground)
+                .clickable { onGoalsDropdownToggle(true) }
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text( text = goal, color = AuthColors.AccentGreen)
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                    tint = AuthColors.AccentGreen
+                )
+            }
+
+            DropdownMenu(
+                expanded = showGoalsDropdown,
+                onDismissRequest = { onGoalsDropdownToggle(false) },
+                modifier = Modifier.fillMaxWidth(0.8f).background(AuthColors.FieldBackground)
+            ) {
+                goals.forEach { goalN ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(goalN, color = if (goal == goalN) AuthColors.AccentGreen else AuthColors.TextSecondary)
+                        },
+                        onClick = {
+                            onGoalsChange(goalN)
+                            onGoalsDropdownToggle(false)
                         }
                     )
                 }

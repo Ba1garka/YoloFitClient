@@ -9,12 +9,14 @@ class CreateWorkoutUseCase(
     suspend operator fun invoke(
         userId: Int?,
         workoutDate: String,
-        exerciseIds: List<Int>
+        exerciseIds: List<Int>,
+        startTime: String
     ): Result<Unit> {
         return workoutRepository.createWorkout(
             userId = userId,
             workoutDate = workoutDate,
-            exerciseIds = exerciseIds
+            exerciseIds = exerciseIds,
+            startTime = startTime
         )
     }
 }

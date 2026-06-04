@@ -7,5 +7,6 @@ data class WorkoutDetailEntity(
     val workoutDate: String,
     val completed: Boolean,
     val totalCalories: Double,
-    val exerciseSets: List<ExerciseSetDetailEntity>
+    val exerciseSets: List<ExerciseSetDetailEntity>,
+    val startTime: String
 )

@@ -310,6 +310,17 @@ fun WorkoutCard(
                             letterSpacing = 0.5.sp
                         )
                     )
+
+                    Text(
+                        text = workout.startTime,
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = ExerciseColors.TextPrimary,
+                            fontSize = 18.sp,
+                            letterSpacing = 0.5.sp
+                        )
+                    )
+
                     Text(
                         text = workout.completed.toString() ,
                         style = MaterialTheme.typography.labelSmall.copy(

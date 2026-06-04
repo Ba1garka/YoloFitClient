@@ -24,5 +24,8 @@ data class WorkoutDetailDto(
     val totalCalories: Double? = 0.0,
 
     @SerialName("exerciseSets")
-    val exerciseSets: List<ExerciseSetDetailDto>? = emptyList()
+    val exerciseSets: List<ExerciseSetDetailDto>? = emptyList(),
+
+    @SerialName("startTime")
+    val startTime: String?
 )

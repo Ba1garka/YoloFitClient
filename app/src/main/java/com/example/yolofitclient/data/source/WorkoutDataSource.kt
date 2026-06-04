@@ -2,11 +2,13 @@ package com.example.yolofitclient.data.source
 
 import com.example.yolofitclient.data.dto.CreateWorkoutDto
 import com.example.yolofitclient.data.dto.ExerciseSetDto
+import com.example.yolofitclient.data.dto.TimeSlotDto
 import com.example.yolofitclient.data.dto.WorkoutDetailDto
 import com.example.yolofitclient.data.dto.WorkoutDto
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -23,14 +25,16 @@ class WorkoutDataSource {
     suspend fun createWorkout(
         userId: Int?,
         workoutDate: String,
-        exerciseIds: List<Int>
+        exerciseIds: List<Int>,
+        startTime: String
     ): Result<Unit> = withContext(Dispatchers.IO) {
 
         val requestBody = CreateWorkoutDto(
             userId = userId,
             workoutDate = workoutDate,
             completed = false,
-            exerciseIds = exerciseIds
+            exerciseIds = exerciseIds,
+            startTime = startTime
         )
 
         runCatching {
@@ -155,6 +159,17 @@ class WorkoutDataSource {
             }
 
             result.body<Unit>()
+        }
+    }
+
+    suspend fun getSlots(userId: Int, date: String): Result<List<TimeSlotDto>> = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = Network.client.get("${Network.HOST}/api/workout/timeslots") {
+                addAuthHeader()
+                parameter("userId", userId)
+                parameter("date", date)
+            }
+            response.body<List<TimeSlotDto>>()
         }
     }
 }

@@ -15,5 +15,8 @@ data class CreateWorkoutDto(
     val completed: Boolean = false,
 
     @SerialName("exerciseIds")
-    val exerciseIds: List<Int> = emptyList()
+    val exerciseIds: List<Int> = emptyList(),
+
+    @SerialName("startTime")
+    val startTime: String
 )

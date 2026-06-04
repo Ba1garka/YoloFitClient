@@ -408,6 +408,16 @@ private fun WorkoutCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
+                        text = workout.startTime,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            color = if (workout.completed) HomeColors.AccentGreen
+                            else HomeColors.AccentOrange,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp
+                        )
+                    )
+
+                    Text(
                         text = if (workout.completed) "Завершена" else "Активна",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = if (workout.completed) HomeColors.AccentGreen

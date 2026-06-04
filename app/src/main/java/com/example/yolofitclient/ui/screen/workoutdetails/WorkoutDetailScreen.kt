@@ -160,6 +160,14 @@ private fun WorkoutHeaderCard(detail: WorkoutDetailEntity) {
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
+
+                Text(
+                    detail.startTime,
+                    color = WorkoutDetailColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = if (detail.completed) WorkoutDetailColors.AccentGreen.copy(alpha = 0.15f)

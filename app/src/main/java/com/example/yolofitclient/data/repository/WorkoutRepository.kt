@@ -4,6 +4,7 @@ import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.data.source.WorkoutDataSource
 import com.example.yolofitclient.domain.entity.ExerciseEntity
 import com.example.yolofitclient.domain.entity.ExerciseSetDetailEntity
+import com.example.yolofitclient.domain.entity.TimeSlotEntity
 import com.example.yolofitclient.domain.entity.TrackingConfigEntity
 import com.example.yolofitclient.domain.entity.WorkoutDetailEntity
 import com.example.yolofitclient.domain.entity.WorkoutEntity
@@ -13,12 +14,14 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
     suspend fun createWorkout(
         userId: Int?,
         workoutDate: String,
-        exerciseIds: List<Int>
+        exerciseIds: List<Int>,
+        startTime: String
     ): Result<Unit> {
         return workoutDataSource.createWorkout(
             userId = userId,
             workoutDate = workoutDate,
-            exerciseIds = exerciseIds
+            exerciseIds = exerciseIds,
+            startTime = startTime
         )
     }
 
@@ -40,7 +43,8 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
                             weightCoefficient = dto.weightCoefficient ?: return@mapNotNull null,
                             bodyZoneName = dto.bodyZoneName ?: return@mapNotNull null,
                         )
-                    } ?: emptyList()
+                    } ?: emptyList(),
+                    startTime = dto.startTime ?: return@mapNotNull null
                 )
             }
         }
@@ -79,7 +83,8 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
                             )
                         }
                     )
-                } ?: emptyList()
+                } ?: emptyList(),
+                startTime = dto.startTime ?: ""
             )
 
         }
@@ -120,12 +125,25 @@ class WorkoutRepository( private val workoutDataSource: WorkoutDataSource) {
                         caloriesBurned = setDto.caloriesBurned ?: 0.0,
                         mistakeCount = setDto.mistakeCount ?: 0,
                     )
-                } ?: emptyList()
+                } ?: emptyList(),
+                startTime = dto.startTime ?: ""
             )
         }
     }
 
     suspend fun deleteWorkout(id: Int) : Result<Unit> {
         return workoutDataSource.deleteWorkout(id)
+    }
+
+    suspend fun getSlots(userId: Int, date: String): Result<List<TimeSlotEntity>>{
+        return workoutDataSource.getSlots( userId, date).mapCatching{ listDto ->
+            listDto.mapNotNull { dto ->
+                TimeSlotEntity(
+                    date = dto.date ?: return@mapNotNull null,
+                    startTime = dto.startTime ?: return@mapNotNull null,
+                    available = dto.available ?: return@mapNotNull null,
+                )
+            }
+        }
     }
 }

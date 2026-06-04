@@ -1,22 +1,31 @@
 package com.example.yolofitclient.ui.screen.createworkout
 
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,6 +47,8 @@ fun CreateWorkoutScreen(
     createWorkoutViewModel: CreateWorkoutViewModel = viewModel<CreateWorkoutViewModel>(),
 ) {
     val state by createWorkoutViewModel.uiState.collectAsState()
+
+    val timeSlotsState by createWorkoutViewModel.timeSlotsState.collectAsState()
 
     Box(
         modifier = Modifier.fillMaxSize().background(ExerciseColors.DarkBackground)
@@ -67,7 +78,7 @@ fun CreateWorkoutScreen(
         when(val currentState = state){
             is CreateWorkoutState.Error -> ErrorState(currentState, onRefresh = {} )
             is CreateWorkoutState.Loading -> LoadingState()
-            is CreateWorkoutState.Content -> ContentState(selectedIds, onBackClick, onWorkoutCreated, createWorkoutViewModel)
+            is CreateWorkoutState.Content -> ContentState(selectedIds, onBackClick, onWorkoutCreated, createWorkoutViewModel, timeSlotsState)
             is CreateWorkoutState.Success -> SuccessState()
         }
     }
@@ -148,10 +159,20 @@ private fun ContentState(
     selectedIds: List<Int>,
     onBackClick: () -> Unit,
     onWorkoutCreated: () -> Unit,
-    createWorkoutViewModel: CreateWorkoutViewModel
+    createWorkoutViewModel: CreateWorkoutViewModel,
+    timeSlotsState: SlotsState
 ){
     var selectedDate by remember { mutableStateOf<String?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
+
+    var selectedTime by remember { mutableStateOf<String?>(null) }
+    var showTimeSlots by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedDate) {
+        selectedDate?.let { date ->
+            createWorkoutViewModel.getTime(date)
+        }
+    }
 
     Scaffold(
         containerColor = Color(0x000D0E0D),
@@ -189,7 +210,7 @@ private fun ContentState(
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF1A1F1A)
                 ),
-                border = androidx.compose.foundation.BorderStroke(
+                border = BorderStroke(
                     1.dp,
                     Color(0xFF2A3A2A)
                 )
@@ -223,7 +244,7 @@ private fun ContentState(
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF1A1F1A)
                 ),
-                border = androidx.compose.foundation.BorderStroke(
+                border = BorderStroke(
                     1.dp,
                     Color(0xFF2A3A2A)
                 )
@@ -256,16 +277,67 @@ private fun ContentState(
                     )
                 }
             }
-            Spacer(Modifier.weight(1f))
 
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = selectedDate != null) {
+                        if (selectedDate != null) {
+                            createWorkoutViewModel.getTime(selectedDate!!)
+                            showTimeSlots = true
+                        }
+                    },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1F1A)),
+                border = BorderStroke(1.dp, Color(0xFF2A3A2A))
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            "Время тренировки",
+                            color = Color(0xFF808080),
+                            fontSize = 12.sp,
+                            letterSpacing = 1.sp
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            selectedTime ?: if (selectedDate != null) "Не выбрано" else "Сначала выберите дату",
+                            color = if (selectedTime != null) Color(0xFFB2EA1B)
+                            else Color(0xFF808080),
+                            fontSize = 18.sp,
+                            fontWeight = if (selectedTime != null) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                    Icon(
+                        Icons.Default.AccessTime,
+                        null,
+                        tint = if (selectedDate != null) Color(0xFFB2EA1B) else Color(0xFF808080),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.weight(1f))
 
             Button(
                 onClick = {
-                    createWorkoutViewModel.createWorkout(selectedDate?: LocalDate.now().toString(), selectedIds)
-                    onWorkoutCreated()
+                    selectedDate?.let { date ->
+                        val dateTime = if (selectedTime != null) "$selectedTime" else "00:00:00"
+                        createWorkoutViewModel.createWorkout(
+                            date,
+                            selectedIds,
+                            dateTime
+                        )
+                        onWorkoutCreated()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                enabled = selectedIds.isNotEmpty() && selectedDate != null,
+                enabled = selectedIds.isNotEmpty() && selectedDate != null && selectedTime != null,
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF2AC274),
@@ -294,6 +366,8 @@ private fun ContentState(
                         val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                             .format(Date(millis))
                         selectedDate = date
+                        selectedTime = null
+                        createWorkoutViewModel.getTime(date)
                     }
                     showDatePicker = false
                 }) {
@@ -324,6 +398,160 @@ private fun ContentState(
                     todayContentColor = Color(0xFFB2EA1B)
                 )
             )
+        }
+    }
+
+    if (showTimeSlots) {
+        when (val timeState = timeSlotsState) {
+            is SlotsState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(top = 300.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                    Text("выберите дату")
+                }
+            }
+
+            is SlotsState.Error -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(top = 300.dp)
+                ) {
+                    Column {
+                        Text(timeState.reason)
+                        Button(onClick = {
+                            selectedDate?.let { createWorkoutViewModel.getTime(it) }
+                        }) {
+                            Text("Retry")
+                        }
+                    }
+                }
+            }
+
+            is SlotsState.Content -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.6f))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            showTimeSlots = false
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {  },
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1F1A)),
+                        border = BorderStroke(
+                            1.dp,
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFFB2EA1B).copy(alpha = 0.3f),
+                                    Color(0xFF2AC274).copy(alpha = 0.2f)
+                                ),
+                                start = Offset(0f, 0f),
+                                end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                            )
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "ВЫБЕРИТЕ ВРЕМЯ",
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFB2EA1B),
+                                        letterSpacing = 2.sp
+                                    )
+                                )
+                                IconButton(onClick = { showTimeSlots = false }) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        null,
+                                        tint = Color(0xFF808080)
+                                    )
+                                }
+                            }
+
+                            Spacer(Modifier.height(4.dp))
+
+                            Text(selectedDate ?: "", color = Color(0xFF808080), fontSize = 13.sp)
+
+                            Spacer(Modifier.height(12.dp))
+
+                            LazyColumn(
+                                modifier = Modifier.height(320.dp)
+                            ) {
+                                items(timeSlotsState.timeSlots.chunked(4)) { rowSlots ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        rowSlots.forEach { slot ->
+                                            val isSelected = selectedTime == slot.startTime
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .background(
+                                                        if (isSelected) {
+                                                            Brush.linearGradient(
+                                                                colors = listOf(
+                                                                    Color(0xFF2AC274).copy(alpha = 0.3f),
+                                                                    Color(0xFFB2EA1B).copy(alpha = 0.15f)
+                                                                ),
+                                                                start = Offset(0f, 0f),
+                                                                end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                                                            )
+                                                        } else {
+                                                            SolidColor(Color(0xFF252A25))
+                                                        }
+                                                    )
+                                                    .border(
+                                                        1.dp,
+                                                        if (isSelected) Color(0xFFB2EA1B)
+                                                        else Color(0xFF2A3A2A),
+                                                        RoundedCornerShape(12.dp)
+                                                    )
+                                                    .clickable {
+                                                        selectedTime = slot.startTime
+                                                        showTimeSlots = false
+                                                    }
+                                                    .padding(vertical = 12.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    slot.startTime,
+                                                    color = if (isSelected) Color(0xFFB2EA1B)
+                                                    else Color(0xFFF0F0F0),
+                                                    fontWeight = if (isSelected) FontWeight.Bold
+                                                    else FontWeight.Normal,
+                                                    fontSize = 14.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

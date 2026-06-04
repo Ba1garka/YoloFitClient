@@ -404,8 +404,14 @@ private fun CalendarWorkoutCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "${workout.exercises.size} упражнений",
+                    workout.startTime,
                     color = CalendarColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                Text(
+                    "${workout.exercises.size} упражнений",
+                    color = CalendarColors.TextPrimary.copy(alpha = 0.4f),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )

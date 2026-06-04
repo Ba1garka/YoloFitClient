@@ -6,5 +6,6 @@ class WorkoutEntity(
     val userName: String,
     val workoutDate: String,
     val completed: Boolean,
-    val exercises: List<ExerciseEntity>
+    val exercises: List<ExerciseEntity>,
+    val startTime: String
 )

@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
@@ -139,6 +141,13 @@ private fun ListContentState(
     onWorkoutCreateClick: (List<Int>) -> Unit,
     selectedIds : SnapshotStateList<Int>,
 ){
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredExercises = remember(state.users, searchQuery) {
+        if (searchQuery.isBlank()) state.users
+        else state.users.filter { it.name.contains(searchQuery, ignoreCase = true) }
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
@@ -154,6 +163,35 @@ private fun ListContentState(
                     letterSpacing = 2.sp
                 )
             )
+        }
+
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                placeholder = { Text("Поиск упражнений...", color = ExerciseColors.TextDim) },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, null, tint = ExerciseColors.AccentGreen)
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, "Очистить", tint = ExerciseColors.TextDim)
+                        }
+                    }
+                },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ExerciseColors.AccentGreen,
+                    unfocusedBorderColor = ExerciseColors.CardBorder,
+                    cursorColor = ExerciseColors.AccentGreen,
+                    focusedTextColor = ExerciseColors.TextPrimary,
+                    unfocusedTextColor = ExerciseColors.TextPrimary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+
 
             if (selectedIds.isNotEmpty()) {
                 Button(
@@ -175,9 +213,10 @@ private fun ListContentState(
                     )
                 }
             }
+
         }
 
-        items(state.users) { exercise ->
+        items(filteredExercises) { exercise ->
             ExerciseCard(
                 exercise = exercise,
                 isSelected = selectedIds.contains(exercise.id),
@@ -188,9 +227,7 @@ private fun ListContentState(
                         selectedIds.add(exercise.id)
                     }
                 },
-                onClick = {
-
-                }
+                onClick = { }
             )
         }
     }

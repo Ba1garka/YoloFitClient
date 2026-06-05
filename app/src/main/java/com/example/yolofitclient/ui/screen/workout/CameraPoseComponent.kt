@@ -7,17 +7,29 @@ import android.util.Size
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -35,7 +47,7 @@ fun CameraPoseComponent(
     trackingConfig: TrackingConfigEntity,
     onRepsUpdate: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    onAiFeedback: (angle: Double, phase: ExerciseCounter.Phase) -> Unit = { _, _ -> },
+    onAiFeedback: (angle: Double, phase: ExerciseCounter.Phase) -> Unit ,
 ) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current
@@ -66,6 +78,18 @@ fun CameraPoseComponent(
 
     var exerciseCounter by remember { mutableStateOf(ExerciseCounter(config)) }
 
+    var previousCount by remember { mutableIntStateOf(0) }
+    var pulse by remember { mutableStateOf(false) }
+
+    val scale by animateFloatAsState(
+        targetValue = if (pulse) 1.3f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        finishedListener = { pulse = false }
+    )
+
 
     LaunchedEffect(config) {
         exerciseCounter = ExerciseCounter(config)
@@ -84,7 +108,7 @@ fun CameraPoseComponent(
     }
 
     if (detector == null) {
-        Box(modifier = modifier, contentAlignment = androidx.compose.ui.Alignment.Center) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
             Text("Ошибка загрузки модели", color = Color.White, fontSize = 14.sp)
         }
         return
@@ -93,15 +117,15 @@ fun CameraPoseComponent(
     Box(modifier = modifier) {
         AndroidView(
             factory = { viewContext ->
-                val previewView = PreviewView(viewContext)
+                val previewView = PreviewView(viewContext) //окно
                 val cameraProvider = ProcessCameraProvider.getInstance(viewContext)
 
                 cameraProvider.addListener({
                     try {
                         val camProvider = cameraProvider.get()
 
-                        val preview = Preview.Builder().build().also {
-                            it.setSurfaceProvider(previewView.surfaceProvider)
+                        val preview = Preview.Builder().build().also { //генерирует поток
+                            it.setSurfaceProvider(previewView.surfaceProvider) //проводник видеопотока
                         }
 
                         val analyzer = ImageAnalysis.Builder()
@@ -110,7 +134,7 @@ fun CameraPoseComponent(
                             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                             .build()
 
-                        analyzer.setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
+                        analyzer.setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy -> //кадр с камеры
                             try {
                                 val bitmap = imageProxyToBitmap(imageProxy)
                                 if (bitmap != null) {
@@ -161,7 +185,7 @@ fun CameraPoseComponent(
                                         }
                                     } else result
 
-                                    detections = smoothedDetections
+                                    detections = smoothedDetections //рекомпозиция
                                     exerciseCounter.update(detections)
                                     onRepsUpdate(exerciseCounter.getCount())
 
@@ -254,41 +278,10 @@ fun CameraPoseComponent(
                 }
             }
 
-            val count = exerciseCounter.getCount()
-            val phase = exerciseCounter.getPhase()
-            val angle = exerciseCounter.getAngle()
-
-            drawContext.canvas.nativeCanvas.apply {
-                val paintBg = Paint().apply {
-                    color = android.graphics.Color.argb(180, 0, 0, 0)
-                    style = Paint.Style.FILL
-                }
-                val paintText = Paint().apply {
-                    color = android.graphics.Color.rgb(178, 234, 27)
-                    textSize = 80f
-                    isFakeBoldText = true
-                    isAntiAlias = true
-                }
-                val paintSub = Paint().apply {
-                    color = android.graphics.Color.WHITE
-                    textSize = 80f
-                    isAntiAlias = true
-                }
-
-                val x = 60f
-                val y = size.height - 200f
-                drawRect(x - 10f, y - 70f, x + 300f, y + 50f, paintBg)
-                drawText("$count", x, y, paintText)
-                drawText(
-                    "${"%.0f".format(angle)} ${
-                        when (phase) {
-                            ExerciseCounter.Phase.DOWN -> "ВНИЗ"
-                            ExerciseCounter.Phase.UP -> "ВВЕРХ"
-                            else -> "—"
-                        }
-                    }",
-                    x, y + 40, paintSub
-                )
+            val currentCount = exerciseCounter.getCount()
+            if (currentCount > previousCount) {
+                pulse = true
+                previousCount = currentCount
             }
 
             drawContext.canvas.nativeCanvas.apply {
@@ -298,6 +291,46 @@ fun CameraPoseComponent(
                     isAntiAlias = true
                 }
                 drawText("FPS: ${"%.0f".format(fps)}", 20f, 40f, paint)
+            }
+        }
+
+        val currentCount = exerciseCounter.getCount()
+        LaunchedEffect(currentCount) {
+            if (currentCount > previousCount) {
+                pulse = true
+                previousCount = currentCount
+            }
+        }
+
+        Box(
+            modifier = Modifier.fillMaxSize().padding(bottom = 32.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    modifier = Modifier.size(80.dp).scale(scale).clip(CircleShape).background(Color(0xCC000000))
+                        .border(2.dp, Color(0xFFB2EA1B), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "$currentCount", color = Color(0xFFB2EA1B), fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val phase = exerciseCounter.getPhase()
+                val angle = exerciseCounter.getAngle()
+                Text(
+                    text = "${"%.0f".format(angle)}° ${
+                        when (phase) {
+                            ExerciseCounter.Phase.DOWN -> "ВНИЗ"
+                            ExerciseCounter.Phase.UP -> "ВВЕРХ"
+                            else -> "—"
+                        }
+                    }",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.background(Color(0xAA000000), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 4.dp)
+                )
             }
         }
     }

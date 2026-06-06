@@ -193,9 +193,9 @@ fun ContentState(
                 name = it
                 viewModel.onIntent(LoginIntent.TextInput(name, password))
                             },
-            placeholder = "Email",
+            placeholder = "Имя",
             icon = Icons.Default.Email,
-            keyboardType = KeyboardType.Email
+            keyboardType = KeyboardType.Text
         )
         Spacer(modifier = Modifier.height(16.dp))
 

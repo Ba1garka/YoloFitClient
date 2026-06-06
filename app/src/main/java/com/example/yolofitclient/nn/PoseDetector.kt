@@ -205,15 +205,10 @@ class PoseDetector(context: Context) {
 
             if (confidence < confThreshold) continue
 
-            val cx = bboxCx
-            val cy = bboxCy
-            val bw = bboxW
-            val bh = bboxH
-
-            val x1 = (cx - bw / 2f).coerceIn(0f, inputSize.toFloat())
-            val y1 = (cy - bh / 2f).coerceIn(0f, inputSize.toFloat())
-            val x2 = (cx + bw / 2f).coerceIn(0f, inputSize.toFloat())
-            val y2 = (cy + bh / 2f).coerceIn(0f, inputSize.toFloat())
+            val x1 = (bboxCx - bboxW / 2f).coerceIn(0f, inputSize.toFloat())
+            val y1 = (bboxCy - bboxH / 2f).coerceIn(0f, inputSize.toFloat())
+            val x2 = (bboxCx + bboxW / 2f).coerceIn(0f, inputSize.toFloat())
+            val y2 = (bboxCy + bboxH / 2f).coerceIn(0f, inputSize.toFloat())
 
             val boxW = x2 - x1
             val boxH = y2 - y1

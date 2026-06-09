@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -27,14 +26,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.example.yolofitclient.domain.entity.ExerciseEntity
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
+import com.example.yolofitclient.R
 
 
 object ExerciseColors {
@@ -54,7 +56,7 @@ fun ExerciseListScreen(
     exerciseListViewModel: ExerciseListViewModel = viewModel<ExerciseListViewModel>(),
     onWorkoutCreateClick: (List<Int>) -> Unit
 ) {
-    val state by exerciseListViewModel.uiState.collectAsState()
+    val state by exerciseListViewModel.uiState.collectAsStateWithLifecycle()
 
     val selectedIds = remember { mutableStateListOf<Int>() }
 
@@ -129,7 +131,7 @@ private fun ListErrorState(
                     containerColor = ExerciseColors.AccentGreenDark
                 )
             ) {
-                Text("Обновить")
+                Text(stringResource(R.string.retry))
             }
         }
     }
@@ -155,7 +157,7 @@ private fun ListContentState(
     ){
         item {
             Text(
-                text = "УПРАЖНЕНИЯ",
+                text = stringResource(R.string.exercises),
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontWeight = FontWeight.Black,
@@ -170,14 +172,14 @@ private fun ListContentState(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                placeholder = { Text("Поиск упражнений...", color = ExerciseColors.TextDim) },
+                placeholder = { Text(stringResource(R.string.searchExercises), color = ExerciseColors.TextDim) },
                 leadingIcon = {
                     Icon(Icons.Default.Search, null, tint = ExerciseColors.AccentGreen)
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, "Очистить", tint = ExerciseColors.TextDim)
+                            Icon(Icons.Default.Close, null, tint = ExerciseColors.TextDim)
                         }
                     }
                 },
@@ -208,7 +210,7 @@ private fun ListContentState(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Создать (${selectedIds.size})",
+                        stringResource(R.string.create) + " (${selectedIds.size})",
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -238,8 +240,8 @@ fun ExerciseCard(
     exercise: ExerciseEntity,
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
-    onSelectionToggle: () -> Unit = {},
-    onClick: () -> Unit = {}
+    onSelectionToggle: () -> Unit,
+    onClick: () -> Unit
 ) {
     val cardShape = DiagonalRoundedCornerShape(
         topLeft = 90f,
@@ -318,7 +320,7 @@ fun ExerciseCard(
                         )
                 ) {
                     AsyncImage(
-                        model = "https://i.pinimg.com/originals/3b/b0/28/3bb028b7dcd1bf9d39f08ab3a2102e67.jpg?nii=t",
+                        model = "https://i.pinimg.com/originals/3b/b0/28/3bb028b7dcd1bf9d39f08ab3a2102e67.jpg?nii=t", // TODO()
                         contentDescription = exercise.name,
                         modifier = Modifier
                             .fillMaxSize()
@@ -382,8 +384,8 @@ fun ExerciseCard(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        ParameterChip(label = "Подходы", value = "${exercise.defaultSets}")
-                        ParameterChip(label = "Повторы", value = "${exercise.defaultReps}")
+                        ParameterChip(label = stringResource(R.string.sets), value = "${exercise.defaultSets}")
+                        ParameterChip(label = stringResource(R.string.reps), value = "${exercise.defaultReps}")
                     }
                 }
 
@@ -395,16 +397,14 @@ fun ExerciseCard(
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(
-                            if (isSelected)
-                                ExerciseColors.AccentGreen.copy(alpha = 0.2f)
-                            else
-                                ExerciseColors.CardBorder.copy(alpha = 0.2f)
+                            if (isSelected) ExerciseColors.AccentGreen.copy(alpha = 0.2f)
+                            else ExerciseColors.CardBorder.copy(alpha = 0.2f)
                         )
                 ) {
                     Icon(
                         imageVector = if (isSelected) Icons.Default.CheckCircle
                         else Icons.Default.AddCircleOutline,
-                        contentDescription = if (isSelected) "Выбрано" else "Выбрать",
+                        contentDescription = null,
                         tint = if (isSelected) ExerciseColors.AccentGreen else ExerciseColors.TextDim,
                         modifier = Modifier.size(20.dp)
                     )
@@ -420,8 +420,7 @@ private fun ParameterChip(
     value: String
 ) {
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
+        modifier = Modifier.clip(RoundedCornerShape(10.dp))
             .background(
                 Brush.linearGradient(
                     colors = listOf(

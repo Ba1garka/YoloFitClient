@@ -27,20 +27,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.yolofitclient.data.dto.UserDto
 import com.example.yolofitclient.data.source.AuthLocalDataSource
-import com.example.yolofitclient.ui.screen.exercise.SharedWorkoutViewModel
 import com.example.yolofitclient.ui.theme.AuthColors
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
+import com.example.yolofitclient.R
 
 
 @Composable
@@ -48,7 +50,7 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit,
     viewModel: ProfileViewModel = viewModel<ProfileViewModel>()
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     var isEditing by remember { mutableStateOf(false) }
@@ -131,7 +133,7 @@ fun ProfileScreen(
             contentPadding = PaddingValues(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Кнопка редактирования вверху
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -139,7 +141,7 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "ПРОФИЛЬ",
+                        text = stringResource(R.string.profile),
                         style = MaterialTheme.typography.displayLarge.copy(
                             fontWeight = FontWeight.Black,
                             color = AuthColors.TextPrimary,
@@ -175,14 +177,14 @@ fun ProfileScreen(
                     ) {
                         Icon(
                             imageVector = if (isEditing) Icons.Default.Check else Icons.Default.Edit,
-                            contentDescription = if (isEditing) "Сохранить" else "Редактировать",
+                            contentDescription = null,
                             tint = if (isEditing) AuthColors.AccentGreen else AuthColors.TextSecondary
                         )
                     }
                 }
             }
 
-            // Аватар
+
             item {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
@@ -213,7 +215,7 @@ fun ProfileScreen(
                                     .data(photoUri)
                                     .crossfade(true)
                                     .build(),
-                                contentDescription = "Аватар",
+                                contentDescription = null,
                                 modifier = Modifier.fillMaxSize().padding(3.dp).clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
@@ -224,7 +226,7 @@ fun ProfileScreen(
                                     .data(user!!.photoUrl)
                                     .crossfade(true)
                                     .build(),
-                                contentDescription = "Аватар",
+                                contentDescription = null,
                                 modifier = Modifier.fillMaxSize().padding(3.dp).clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
@@ -237,7 +239,6 @@ fun ProfileScreen(
                             )
                         }
 
-                        // Кнопка камеры при редактировании
                         if (isEditing) {
                             Box(
                                 modifier = Modifier.align(Alignment.BottomEnd).offset(x = 8.dp, y = 8.dp).size(44.dp)
@@ -280,14 +281,14 @@ fun ProfileScreen(
             }
 
             item {
-                SectionTitle("ЛИЧНАЯ ИНФОРМАЦИЯ")
+                SectionTitle(stringResource(R.string.personalInfo))
             }
 
             item {
                 InfoField(
                     icon = Icons.Default.Email,
-                    label = "Email",
-                    value = user?.email ?: "Не указан",
+                    label = stringResource(R.string.email),
+                    value = user?.email ?: stringResource(R.string.noEmail),
                     isEditing = isEditing,
                     editedValue = editedEmail,
                     onEditValueChange = { editedEmail = it },
@@ -298,12 +299,12 @@ fun ProfileScreen(
             item {
                 InfoField(
                     icon = Icons.Default.CalendarMonth,
-                    label = "Дата рождения",
-                    value = user?.birthDate ?: "Не указана",
+                    label = stringResource(R.string.birthday),
+                    value = user?.birthDate ?: stringResource(R.string.noData),
                     isEditing = isEditing,
                     editedValue = editedBirthDate,
                     onEditValueChange = { editedBirthDate = it },
-                    placeholder = "ГГГГ-ММ-ДД"
+                    placeholder = stringResource(R.string.placeholderData)
                 )
             }
 
@@ -319,7 +320,7 @@ fun ProfileScreen(
             }
 
             item {
-                SectionTitle("ФИЗИЧЕСКИЕ ПАРАМЕТРЫ")
+                SectionTitle(stringResource(R.string.physicalParams))
             }
 
             item {
@@ -330,7 +331,7 @@ fun ProfileScreen(
                     PhysicalField(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Height,
-                        label = "Рост",
+                        label = stringResource(R.string.height),
                         value = "${user?.height} см",
                         isEditing = isEditing,
                         editedValue = editedHeight ?: "",
@@ -341,7 +342,7 @@ fun ProfileScreen(
                     PhysicalField(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.MonitorWeight,
-                        label = "Вес",
+                        label = stringResource(R.string.weight),
                         value = "${user?.weight} кг",
                         isEditing = isEditing,
                         editedValue = editedWeight ?: "",
@@ -359,7 +360,7 @@ fun ProfileScreen(
                     levels = fitnessLevels,
                     showDropdown = showFitnessDropdown,
                     onDropdownToggle = { showFitnessDropdown = it },
-                    "Уровень подготовки",
+                    stringResource(R.string.trainingLevel),
                     Icons.Default.TrendingUp
                 )
             }
@@ -372,7 +373,7 @@ fun ProfileScreen(
                     levels = goals,
                     showDropdown = showGoalsDropdown,
                     onDropdownToggle = { showGoalsDropdown = it },
-                    "Ваша цель",
+                    stringResource(R.string.goal),
                     Icons.Default.GolfCourse
                 )
             }
@@ -432,7 +433,7 @@ fun ProfileScreen(
                                     tint = AuthColors.Background
                                 )
                                 Text(
-                                    text = "Сохранить изменения",
+                                    text = stringResource(R.string.save),
                                     style = MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = AuthColors.Background
@@ -467,7 +468,7 @@ fun ProfileScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "Выйти из аккаунта",
+                        stringResource(R.string.exit),
                         color = AuthColors.ErrorRed,
                         fontWeight = FontWeight.Medium
                     )
@@ -661,7 +662,7 @@ private fun GenderField(
             } else {
                 Column {
                     Text(
-                        text = "Пол",
+                        text = stringResource(R.string.gender),
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = AuthColors.TextDim,
                             fontSize = 11.sp
@@ -884,64 +885,6 @@ private fun FitnessLevelField(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun EditTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    icon: ImageVector
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = AuthColors.CardBackground
-        )
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(
-                        AuthColors.AccentGreen.copy(alpha = 0.15f)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = AuthColors.AccentGreen,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            TextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text(label, color = AuthColors.TextDim)
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = AuthColors.AccentGreen,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = AuthColors.AccentGreen,
-                    focusedTextColor = AuthColors.TextPrimary,
-                    unfocusedTextColor = AuthColors.TextPrimary
-                ),
-                singleLine = true
-            )
         }
     }
 }

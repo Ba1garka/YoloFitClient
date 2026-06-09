@@ -33,20 +33,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yolofitclient.domain.entity.ExerciseSetDetailEntity
 import com.example.yolofitclient.domain.entity.WorkoutDetailEntity
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
+import com.example.yolofitclient.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +58,7 @@ fun WorkoutDetailScreen(
     onBack: () -> Unit,
     viewModel: WorkoutDetailViewModel = viewModel { WorkoutDetailViewModel(workoutId) }
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier.fillMaxSize().background(WorkoutDetailColors.DarkBackground)
@@ -75,7 +77,7 @@ fun WorkoutDetailScreen(
 
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text("Детали тренировки", color = WorkoutDetailColors.TextPrimary) },
+                title = { Text(stringResource(R.string.detailWorkout), color = WorkoutDetailColors.TextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, "Назад", tint = WorkoutDetailColors.AccentGreen)
@@ -108,7 +110,7 @@ private fun DetailContent(detail: WorkoutDetailEntity) {
 
         item {
             Text(
-                "ВЫПОЛНЕННЫЕ ПОДХОДЫ",
+                stringResource(R.string.completeSets),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Black,
                     color = WorkoutDetailColors.AccentGreen,
@@ -174,7 +176,7 @@ private fun WorkoutHeaderCard(detail: WorkoutDetailEntity) {
                     else WorkoutDetailColors.AccentOrange.copy(alpha = 0.15f)
                 ) {
                     Text(
-                        if (detail.completed) "Завершена" else "Активна",
+                        if (detail.completed) stringResource(R.string.complete) else stringResource(R.string.active),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         color = if (detail.completed) WorkoutDetailColors.AccentGreen
                         else WorkoutDetailColors.AccentOrange,
@@ -190,11 +192,11 @@ private fun WorkoutHeaderCard(detail: WorkoutDetailEntity) {
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 StatChip(
-                    label = "Упражнений",
+                    label = stringResource(R.string.listExercise),
                     value = "${detail.exerciseSets.groupBy { it.exerciseName }.size}"
                 )
                 StatChip(
-                    label = "Подходов",
+                    label = stringResource(R.string.sets),
                     value = "${detail.exerciseSets.size}"
                 )
             }
@@ -234,13 +236,13 @@ private fun CaloriesCard(totalCalories: Double) {
             Spacer(Modifier.width(16.dp))
             Column {
                 Text(
-                    "Сожжено калорий",
+                    stringResource(R.string.burnedKKal),
                     color = WorkoutDetailColors.TextDim,
                     fontSize = 12.sp,
                     letterSpacing = 1.sp
                 )
                 Text(
-                    "$totalCalories ккал",
+                    "$totalCalories " + stringResource(R.string.kkal),
                     color = WorkoutDetailColors.AccentOrange,
                     fontWeight = FontWeight.Bold,
                     fontSize = 28.sp
@@ -286,9 +288,9 @@ private fun ExerciseGroupCard(exerciseName: String, sets: List<ExerciseSetDetail
             ) {
                 Text("№", color = WorkoutDetailColors.TextDim, fontSize = 12.sp, modifier = Modifier.width(30.dp))
                 Text("Повт", color = WorkoutDetailColors.TextDim, fontSize = 12.sp, modifier = Modifier.width(50.dp))
-                Text("Вес(кг)", color = WorkoutDetailColors.TextDim, fontSize = 12.sp, modifier = Modifier.width(70.dp))
-                Text("Ккал", color = WorkoutDetailColors.TextDim, fontSize = 12.sp, modifier = Modifier.width(50.dp))
-                Text("Ошибки", color = WorkoutDetailColors.TextDim, fontSize = 12.sp)
+                Text(stringResource(R.string.weight)+"(кг)", color = WorkoutDetailColors.TextDim, fontSize = 12.sp, modifier = Modifier.width(70.dp))
+                Text(stringResource(R.string.Kkal), color = WorkoutDetailColors.TextDim, fontSize = 12.sp, modifier = Modifier.width(50.dp))
+                Text(stringResource(R.string.mistakes), color = WorkoutDetailColors.TextDim, fontSize = 12.sp)
             }
 
             sets.forEach { set ->
@@ -314,7 +316,7 @@ private fun ExerciseGroupCard(exerciseName: String, sets: List<ExerciseSetDetail
                         modifier = Modifier.width(50.dp)
                     )
                     Text(
-                        if (set.mistakeCount > 0) "${set.mistakeCount}" else "ок",
+                        if (set.mistakeCount > 0) "${set.mistakeCount}" else stringResource(R.string.ok),
                         color = if (set.mistakeCount > 0) Color(0xFFFF4444) else WorkoutDetailColors.AccentGreen,
                         fontSize = 12.sp
                     )

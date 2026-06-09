@@ -26,16 +26,18 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yolofitclient.ui.screen.exercise.ExerciseColors
 import com.example.yolofitclient.ui.theme.AuthColors
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
+import com.example.yolofitclient.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,9 +48,9 @@ fun CreateWorkoutScreen(
     onWorkoutCreated: () -> Unit,
     createWorkoutViewModel: CreateWorkoutViewModel = viewModel<CreateWorkoutViewModel>(),
 ) {
-    val state by createWorkoutViewModel.uiState.collectAsState()
+    val state by createWorkoutViewModel.uiState.collectAsStateWithLifecycle()
 
-    val timeSlotsState by createWorkoutViewModel.timeSlotsState.collectAsState()
+    val timeSlotsState by createWorkoutViewModel.timeSlotsState.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier.fillMaxSize().background(ExerciseColors.DarkBackground)
@@ -102,7 +104,7 @@ private fun SuccessState() {
             )
 
             Text(
-                text = "Тренировка успешно создана",
+                text = stringResource(R.string.workoutCreate),
                 color = AuthColors.TextSecondary,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -147,7 +149,7 @@ private fun ErrorState(
                     containerColor = ExerciseColors.AccentGreenDark
                 )
             ) {
-                Text("Обновить")
+                Text(stringResource(R.string.retry))
             }
         }
     }
@@ -179,16 +181,13 @@ private fun ContentState(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "Новая тренировка",
-                        color = Color(0xFFF0F0F0)
-                    )
+                    Text(stringResource(R.string.newWorkout), color = Color(0xFFF0F0F0))
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             Icons.Default.ArrowBack,
-                            contentDescription = "Назад",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color(0xFFB2EA1B)
                         )
                     }
@@ -217,7 +216,7 @@ private fun ContentState(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        "Выбрано упражнений",
+                        stringResource(R.string.selectedExercise),
                         color = Color(0xFF808080),
                         fontSize = 12.sp,
                         letterSpacing = 1.sp
@@ -256,14 +255,14 @@ private fun ContentState(
                 ) {
                     Column {
                         Text(
-                            "Дата тренировки",
+                            stringResource(R.string.dataWorkout),
                             color = Color(0xFF808080),
                             fontSize = 12.sp,
                             letterSpacing = 1.sp
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            selectedDate ?: "Не выбрана",
+                            selectedDate ?: stringResource(R.string.noSelected),
                             color = if (selectedDate != null) Color(0xFFB2EA1B) else Color(0xFF808080),
                             fontSize = 18.sp,
                             fontWeight = if (selectedDate != null) FontWeight.Bold else FontWeight.Normal
@@ -299,14 +298,14 @@ private fun ContentState(
                 ) {
                     Column {
                         Text(
-                            "Время тренировки",
+                            stringResource(R.string.timeWorkout),
                             color = Color(0xFF808080),
                             fontSize = 12.sp,
                             letterSpacing = 1.sp
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            selectedTime ?: if (selectedDate != null) "Не выбрано" else "Сначала выберите дату",
+                            selectedTime ?: if (selectedDate != null) stringResource(R.string.noSelected) else stringResource(R.string.selectData),
                             color = if (selectedTime != null) Color(0xFFB2EA1B)
                             else Color(0xFF808080),
                             fontSize = 18.sp,
@@ -345,11 +344,10 @@ private fun ContentState(
                 )
             ) {
                 Text(
-                    "Создать тренировку",
+                    stringResource(R.string.createWorkout),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = if (selectedIds.isNotEmpty() && selectedDate != null) Color.White
-                    else Color(0xFF808080)
+                    color = if (selectedIds.isNotEmpty() && selectedDate != null) Color.White else Color(0xFF808080)
                 )
             }
         }
@@ -371,12 +369,12 @@ private fun ContentState(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK", color = Color(0xFFB2EA1B))
+                    Text(stringResource(R.string.ok), color = Color(0xFFB2EA1B))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Отмена", color = Color(0xFF808080))
+                    Text(stringResource(R.string.cancel), color = Color(0xFF808080))
                 }
             }
         ) {
@@ -410,7 +408,7 @@ private fun ContentState(
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
-                    Text("выберите дату")
+                    Text(stringResource(R.string.selectData))
                 }
             }
 
@@ -423,7 +421,7 @@ private fun ContentState(
                         Button(onClick = {
                             selectedDate?.let { createWorkoutViewModel.getTime(it) }
                         }) {
-                            Text("Retry")
+                            Text(stringResource(R.string.retry))
                         }
                     }
                 }
@@ -471,7 +469,7 @@ private fun ContentState(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    "ВЫБЕРИТЕ ВРЕМЯ",
+                                    stringResource(R.string.selectTime),
                                     style = MaterialTheme.typography.labelLarge.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFFB2EA1B),

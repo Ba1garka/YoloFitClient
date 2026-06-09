@@ -35,7 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -47,14 +46,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yolofitclient.domain.entity.WorkoutEntity
 import com.example.yolofitclient.ui.screen.exercise.ExerciseColors
 import com.example.yolofitclient.ui.screen.home.NoWorkoutsCard
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
+import com.example.yolofitclient.R
 
 
 @Composable
@@ -62,7 +64,7 @@ fun MyWorkoutScreen(
     onWorkoutClick : (Int) -> Unit,
     viewModel: MyWorkoutViewModel = viewModel<MyWorkoutViewModel>()
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val selectedIds = remember { mutableStateListOf<Int>() }
 
@@ -109,7 +111,7 @@ fun MyWorkoutScreen(
                 onWorkoutClick
             )
             is MyWorkoutState.Success -> {
-                Toast.makeText(context, "Удаление успешно!", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, stringResource(R.string.deleteSuccessful), Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -152,7 +154,7 @@ private fun ListErrorState(
                     containerColor = ExerciseColors.AccentGreenDark
                 )
             ) {
-                Text("Обновить")
+                Text(stringResource(R.string.retry))
             }
         }
     }
@@ -172,7 +174,7 @@ private fun ListContentState(
     ){
         item {
             Text(
-                text = "ТРЕНИРОВКИ",
+                text = stringResource(R.string.calendar_subtitle),
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontWeight = FontWeight.Black,
@@ -196,7 +198,7 @@ private fun ListContentState(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Удалить (${selectedIds.size})",
+                        stringResource(R.string.delete) + " (${selectedIds.size})",
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -349,7 +351,7 @@ fun WorkoutCard(
                     Icon(
                         imageVector = if (isSelected) Icons.Default.CheckCircle
                         else Icons.Default.AddCircleOutline,
-                        contentDescription = if (isSelected) "Выбрано" else "Выбрать",
+                        contentDescription = null,
                         tint = if (isSelected) ExerciseColors.AccentGreen else ExerciseColors.TextDim,
                         modifier = Modifier.size(20.dp)
                     )

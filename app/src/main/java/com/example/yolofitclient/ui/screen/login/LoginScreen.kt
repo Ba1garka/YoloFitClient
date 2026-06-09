@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,15 +36,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.yolofitclient.ui.screen.register.AuthTextField
 import com.example.yolofitclient.ui.theme.AuthColors
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
+import com.example.yolofitclient.R
 
 
 @Composable
@@ -54,7 +56,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     toRegister : () -> Unit,
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.actionFlow.collect { action ->
@@ -119,7 +121,7 @@ private fun LoadingState() {
                 color = AuthColors.AccentGreen
             )
             Text(
-                text = "Загрузка...",
+                text = stringResource(R.string.loading),
                 color = AuthColors.TextSecondary,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -169,7 +171,7 @@ fun ContentState(
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "YOLO FIT",
+            text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.displayLarge.copy(
                 fontWeight = FontWeight.Black,
                 color = AuthColors.TextPrimary,
@@ -179,7 +181,7 @@ fun ContentState(
         )
 
         Text(
-            text = "Добро пожаловать",
+            text = stringResource(R.string.welcome),
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = AuthColors.AccentGreen,
                 letterSpacing = 2.sp
@@ -193,7 +195,7 @@ fun ContentState(
                 name = it
                 viewModel.onIntent(LoginIntent.TextInput(name, password))
                             },
-            placeholder = "Имя",
+            placeholder = stringResource(R.string.name),
             icon = Icons.Default.Email,
             keyboardType = KeyboardType.Text
         )
@@ -205,7 +207,7 @@ fun ContentState(
                 password = it
                 viewModel.onIntent(LoginIntent.TextInput(name, password))
                             },
-            placeholder = "Пароль",
+            placeholder = stringResource(R.string.password),
             icon = Icons.Default.Lock,
             keyboardType = KeyboardType.Password,
             isPassword = true,
@@ -217,7 +219,7 @@ fun ContentState(
 
         Button(
             onClick = {
-                println("LoginScreen: Button clicked, login=$name, password=$password")
+                println("LoginScreen: login=$name, password=$password")
                 viewModel.onIntent(LoginIntent.Send(name, password))
 
             },
@@ -251,7 +253,7 @@ fun ContentState(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "ВОЙТИ",
+                    text = stringResource(R.string.logIn),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = AuthColors.Background,
@@ -274,12 +276,12 @@ fun ContentState(
             onClick = toRegister
         ) {
             Text(
-                text = "Нет аккаунта? ",
+                text = stringResource(R.string.noAccount),
                 color = AuthColors.TextSecondary,
                 fontSize = 12.sp
             )
             Text(
-                text = "Зарегистрироваться",
+                text = stringResource(R.string.register),
                 color = AuthColors.AccentGreen,
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp

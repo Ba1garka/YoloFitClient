@@ -15,7 +15,7 @@ import io.ktor.client.engine.okhttp.OkHttp
 
 object Network {
 
-    const val HOST= "http://172.20.10.2:8082"
+    const val HOST= "http://172.19.14.45:8082"
 
     val client by lazy {
         HttpClient(OkHttp) {

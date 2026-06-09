@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,11 +31,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yolofitclient.data.dto.UserDto
 import com.example.yolofitclient.data.source.AuthLocalDataSource
 import com.example.yolofitclient.ui.theme.AuthColors
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
+import com.example.yolofitclient.R
 
 @Composable
 fun RegisterScreen(
@@ -42,7 +45,7 @@ fun RegisterScreen(
     onLoginClick: () -> Unit
 ) {
     val viewModel: RegisterViewModel = viewModel()
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     var name by remember { mutableStateOf("") }
@@ -283,7 +286,7 @@ private fun RegisterContentState(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Регистрация",
+                text = stringResource(R.string.register2),
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontWeight = FontWeight.Black,
                     color = AuthColors.TextPrimary,
@@ -294,9 +297,9 @@ private fun RegisterContentState(
 
             Text(
                 text = when (currentStep) {
-                    0 -> "Основная информация"
-                    1 -> "Физические параметры"
-                    2 -> "Безопасность"
+                    0 -> stringResource(R.string.basicInfo)
+                    1 -> stringResource(R.string.phyParams)
+                    2 -> stringResource(R.string.safety)
                     else -> ""
                 },
                 style = MaterialTheme.typography.bodyLarge.copy(
@@ -432,7 +435,7 @@ private fun RegisterContentState(
                         ),
                         border = BorderStroke(1.dp, AuthColors.AccentGreen)
                     ) {
-                        Text("Назад", color = AuthColors.AccentGreen)
+                        Text(stringResource(R.string.back), color = AuthColors.AccentGreen)
                     }
                 }
 
@@ -478,7 +481,7 @@ private fun RegisterContentState(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (currentStep < totalSteps - 1) "Далее" else "Создать аккаунт",
+                            text = if (currentStep < totalSteps - 1) stringResource(R.string.next) else stringResource(R.string.create),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = AuthColors.Background,
@@ -507,14 +510,14 @@ private fun StepBasicInfo(
         AuthTextField(
             value = name,
             onValueChange = onNameChange,
-            placeholder = "Имя",
+            placeholder = stringResource(R.string.name),
             icon = Icons.Default.Person
         )
 
         AuthTextField(
             value = email,
             onValueChange = onEmailChange,
-            placeholder = "Email",
+            placeholder = stringResource(R.string.email),
             icon = Icons.Default.Email,
             keyboardType = KeyboardType.Email
         )
@@ -522,7 +525,7 @@ private fun StepBasicInfo(
         AuthTextField(
             value = birthDate,
             onValueChange = onBirthDateChange,
-            placeholder = "Дата рождения (ГГГГ-ММ-ДД)",
+            placeholder = stringResource(R.string.birthday) + " " + stringResource(R.string.placeholderData),
             icon = Icons.Default.CalendarMonth
         )
     }
@@ -552,7 +555,7 @@ private fun StepPhysicalParams(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Пол",
+            text = stringResource(R.string.gender),
             style = MaterialTheme.typography.labelLarge.copy(
                 color = AuthColors.TextSecondary,
                 letterSpacing = 1.sp
@@ -626,7 +629,7 @@ private fun StepPhysicalParams(
         AuthTextField(
             value = height,
             onValueChange = onHeightChange,
-            placeholder = "Рост (см)",
+            placeholder = stringResource(R.string.height) + " (см)",
             icon = Icons.Default.Height,
             keyboardType = KeyboardType.Number
         )
@@ -634,13 +637,13 @@ private fun StepPhysicalParams(
         AuthTextField(
             value = weight,
             onValueChange = onWeightChange,
-            placeholder = "Вес (кг)",
+            placeholder = stringResource(R.string.weight) + " (кг)",
             icon = Icons.Default.MonitorWeight,
             keyboardType = KeyboardType.Number
         )
 
         Text(
-            text = "Уровень подготовки",
+            text = stringResource(R.string.trainingLevel),
             style = MaterialTheme.typography.labelLarge.copy(
                 color = AuthColors.TextSecondary,
                 letterSpacing = 1.sp
@@ -694,7 +697,7 @@ private fun StepPhysicalParams(
         }
 
         Text(
-            text = "Цель ваших занятий",
+            text = stringResource(R.string.YourTarget),
             style = MaterialTheme.typography.labelLarge.copy(
                 color = AuthColors.TextSecondary,
                 letterSpacing = 1.sp
@@ -758,7 +761,7 @@ private fun StepPassword(
         AuthTextField(
             value = password,
             onValueChange = onPasswordChange,
-            placeholder = "Пароль",
+            placeholder = stringResource(R.string.password),
             icon = Icons.Default.Lock,
             keyboardType = KeyboardType.Password,
             isPassword = true,
@@ -769,7 +772,7 @@ private fun StepPassword(
         AuthTextField(
             value = confirmPassword,
             onValueChange = onConfirmPasswordChange,
-            placeholder = "Подтвердите пароль",
+            placeholder = stringResource(R.string.password2),
             icon = Icons.Default.Lock,
             keyboardType = KeyboardType.Password,
             isPassword = true,
@@ -780,14 +783,14 @@ private fun StepPassword(
         if (password.isNotEmpty() && confirmPassword.isNotEmpty()) {
             if (password != confirmPassword) {
                 Text(
-                    text = "Пароли не совпадают",
+                    text = stringResource(R.string.passwordError),
                     color = Color(0xFFFF4444),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 8.dp)
                 )
             } else if (password.length < 6) {
                 Text(
-                    text = "Пароль должен быть не менее 6 символов",
+                    text = stringResource(R.string.error),
                     color = Color(0xFFFF4444),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 8.dp)
@@ -812,7 +815,7 @@ private fun LoadingState() {
                 color = AuthColors.AccentGreen
             )
             Text(
-                text = "Создаем аккаунт...",
+                text = stringResource(R.string.processCreate),
                 color = AuthColors.TextSecondary,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -856,7 +859,7 @@ private fun RegisterErrorState(
                     onClick = onBackToForm,
                     border = BorderStroke(1.dp, AuthColors.AccentGreen)
                 ) {
-                    Text("Изменить данные", color = AuthColors.AccentGreen)
+                    Text(stringResource(R.string.changeData), color = AuthColors.AccentGreen)
                 }
 
                 Button(
@@ -865,7 +868,7 @@ private fun RegisterErrorState(
                         containerColor = AuthColors.AccentGreenDark
                     )
                 ) {
-                    Text("Повторить")
+                    Text(stringResource(R.string.repeat))
                 }
             }
         }
@@ -890,7 +893,7 @@ private fun SuccessState(userName: String) {
             )
 
             Text(
-                text = "Добро пожаловать, $userName!",
+                text = stringResource(R.string.welcome) + ", $userName!",
                 color = AuthColors.TextPrimary,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
@@ -898,7 +901,7 @@ private fun SuccessState(userName: String) {
             )
 
             Text(
-                text = "Ваш аккаунт успешно создан",
+                text = stringResource(R.string.createAccSuccess),
                 color = AuthColors.TextSecondary,
                 style = MaterialTheme.typography.bodyLarge
             )

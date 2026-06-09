@@ -1,3 +1,105 @@
 <resources>
-    <string name="app_name">YoloFitClient</string>
+    <string name="app_name">YOLO FIT</string>
+
+    <string name="calendar_title">КАЛЕНДАРЬ</string>
+    <string name="retry">Обновить</string>
+    <string name="back">Назад</string>
+    <string name="today">Сегодня</string>
+    <string name="next">Вперёд</string>
+    <string name="calendar_subtitle">ТРЕНИРОВКИ</string>
+    <string name="noWorkoutToday">Нет тренировок на этот день</string>
+    <string name="complete">Завершена</string>
+    <string name="active">Активна</string>
+
+    <string name="workoutCreate">Тренировка успешно создана</string>
+    <string name="newWorkout">Новая тренировка</string>
+    <string name="selectedExercise">Выбрано упражнений</string>
+    <string name="dataWorkout">Дата тренировки</string>
+    <string name="noSelected">Не выбрано</string>
+    <string name="timeWorkout">Время тренировки</string>
+    <string name="selectData">Сначала выберите дату</string>
+    <string name="createWorkout">Создать тренировку</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Отмена</string>
+    <string name="selectTime">ВЫБЕРИТЕ ВРЕМЯ</string>
+
+    <string name="exercises">УПРАЖНЕНИЯ</string>
+    <string name="searchExercises">Поиск упражнений...</string>
+    <string name="create">Создать</string>
+    <string name="sets">Подходы</string>
+    <string name="reps">Повторы</string>
+
+    <string name="todayWorkouts">ТРЕНИРОВКИ НА СЕГОДНЯ</string>
+    <string name="hello">Привет!</string>
+    <string name="goToWorkout">Готов к тренировке?</string>
+    <string name="letsCreateWorkout">Создайте новую тренировку</string>
+    <string name="exercisesSmall">Упражнения:</string>
+    <string name="startWorkout">Начать тренировку</string>
+    <string name="calorii">КАЛОРИИ</string>
+    <string name="noTarget">Цель не задана</string>
+    <string name="kkal">ккал</string>
+
+    <string name="loading">Загрузка...</string>
+    <string name="welcome">Добро пожаловать</string>
+    <string name="name">Имя</string>
+    <string name="password">Пароль</string>
+    <string name="logIn">ВОЙТИ</string>
+    <string name="noAccount">Нет аккаунта? </string>
+    <string name="register">Зарегистрироваться</string>
+
+    <string name="deleteSuccessful">Удаление успешно!</string>
+    <string name="delete">Удалить</string>
+
+    <string name="profile">ПРОФИЛЬ</string>
+    <string name="personalInfo">ЛИЧНАЯ ИНФОРМАЦИЯ</string>
+    <string name="email">Email</string>
+    <string name="noEmail">Не указан</string>
+    <string name="noData">Не указана</string>
+    <string name="birthday">Дата рождения</string>
+    <string name="placeholderData">ГГГГ-ММ-ДД</string>
+    <string name="physicalParams">ФИЗИЧЕСКИЕ ПАРАМЕТРЫ</string>
+    <string name="height">Рост</string>
+    <string name="weight">Вес</string>
+    <string name="trainingLevel">Уровень подготовки</string>
+    <string name="goal">Ваша цель</string>
+    <string name="save">Сохранить изменения</string>
+    <string name="exit">Выйти из аккаунта</string>
+    <string name="gender">Пол</string>
+
+    <string name="register2">Регистрация</string>
+    <string name="basicInfo">Основная информация</string>
+    <string name="phyParams">Физические параметры</string>
+    <string name="safety">Безопасность</string>
+    <string name="YourTarget">Цель ваших занятий</string>
+    <string name="password2">Подтвердите пароль</string>
+    <string name="passwordError">Пароли не совпадают</string>
+    <string name="error">Пароль должен быть не менее 6 символов</string>
+    <string name="processCreate">Создаем аккаунт...</string>
+    <string name="changeData">Изменить данные</string>
+    <string name="repeat">Повторить</string>
+    <string name="createAccSuccess">Ваш аккаунт успешно создан</string>
+
+    <string name="modelError">Ошибка загрузки модели</string>
+    <string name="down">ВНИЗ</string>
+    <string name="up">ВВЕРХ</string>
+
+    <string name="completedWorkout">Тренировка завершена! </string>
+    <string name="workout">ТРЕНИРОВКА</string>
+    <string name="ai">AI</string>
+    <string name="completedSets">ВЫПОЛНЕННЫЕ ПОДХОДЫ</string>
+    <string name="repsCaps">ПОВТОРЕНИЯ</string>
+    <string name="completeSets">Завершить подход</string>
+    <string name="set">Подход</string>
+    <string name="completeWorkout">Завершить тренировку</string>
+    <string name="loadWorkout">Загрузка тренировки...</string>
+    <string name="goodWork">Отличная работа!</string>
+    <string name="completeRep">Завершить упражнение</string>
+    <string name="repSuccess">Упражнение завершено!</string>
+
+    <string name="detailWorkout">Детали тренировки</string>
+    <string name="listExercise">Упражнений</string>
+    <string name="burnedKKal">Сожжено калорий</string>
+    <string name="Kkal">Ккал</string>
+    <string name="mistakes">Ошибки</string>
+
 </resources>

@@ -1,7 +1,6 @@
 package com.example.yolofitclient.ui.screen.home
 
 
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -15,25 +14,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.yolofitclient.data.dto.UserDto
-import com.example.yolofitclient.data.source.AuthLocalDataSource
 import com.example.yolofitclient.domain.entity.WorkoutEntity
-import com.example.yolofitclient.ui.screen.profile.ProfileState
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.yolofitclient.R
 
 object HomeColors {
     val DarkBackground = Color(0xFF0D0E0D)
@@ -55,7 +53,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel(),
     onWorkoutDetailClick: (Int) -> Unit,
 ) {
-    val state by homeViewModel.uiState.collectAsState()
+    val state by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         homeViewModel.loadTodayWorkouts()
@@ -169,7 +167,7 @@ private fun ContentState(
 
         item {
             Text(
-                text = "ТРЕНИРОВКИ НА СЕГОДНЯ",
+                text = stringResource(R.string.todayWorkouts),
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Black,
@@ -251,7 +249,7 @@ private fun GreetingHeader() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Привет!",
+                    text = stringResource(R.string.hello),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = HomeColors.TextPrimary,
@@ -260,7 +258,7 @@ private fun GreetingHeader() {
                 )
 
                 Text(
-                    text = "Готов к тренировке?",
+                    text = stringResource(R.string.goToWorkout),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         color = HomeColors.TextSecondary
                     )
@@ -332,7 +330,7 @@ fun NoWorkoutsCard() {
             }
 
             Text(
-                text = "Нет тренировок",
+                text = stringResource(R.string.noWorkoutToday),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = HomeColors.TextPrimary,
@@ -341,7 +339,7 @@ fun NoWorkoutsCard() {
             )
 
             Text(
-                text = "Создайте новую тренировку\nв разделе \"База\"",
+                text = stringResource(R.string.letsCreateWorkout),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = HomeColors.TextSecondary,
                     textAlign = TextAlign.Center,
@@ -418,7 +416,7 @@ private fun WorkoutCard(
                     )
 
                     Text(
-                        text = if (workout.completed) "Завершена" else "Активна",
+                        text = if (workout.completed) stringResource(R.string.complete) else stringResource(R.string.active),
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = if (workout.completed) HomeColors.AccentGreen
                             else HomeColors.AccentOrange,
@@ -438,7 +436,7 @@ private fun WorkoutCard(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Упражнения:",
+                    text = stringResource(R.string.exercisesSmall),
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = HomeColors.TextDim,
                         fontSize = 11.sp
@@ -449,7 +447,7 @@ private fun WorkoutCard(
 
                 workout.exercises.take(3).forEach { exercise ->
                     Text(
-                        text = "• ${exercise.name}",
+                        text = "- ${exercise.name}",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = HomeColors.TextPrimary,
                             fontSize = 14.sp
@@ -517,7 +515,7 @@ private fun WorkoutCard(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = "Начать тренировку",
+                                    text = stringResource(R.string.startWorkout),
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = HomeColors.DarkBackground
@@ -544,7 +542,7 @@ private fun CaloriesProgressCard(
         colors = CardDefaults.cardColors(
             containerColor = HomeColors.CardBackground
         ),
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             1.dp,
             Brush.linearGradient(
                 colors = listOf(
@@ -571,7 +569,7 @@ private fun CaloriesProgressCard(
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "КАЛОРИИ",
+                    text = stringResource(R.string.calorii),
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = HomeColors.TextPrimary,
@@ -615,7 +613,7 @@ private fun CaloriesProgressCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "$currentCalories ккал",
+                        text = "$currentCalories " + stringResource(R.string.kkal),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = HomeColors.AccentOrange,
                             fontWeight = FontWeight.Bold
@@ -629,7 +627,7 @@ private fun CaloriesProgressCard(
                         )
                     )
                     Text(
-                        text = "$targetCalories ккал",
+                        text = "$targetCalories " + stringResource(R.string.kkal),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = HomeColors.TextSecondary
                         )
@@ -643,7 +641,7 @@ private fun CaloriesProgressCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$currentCalories ккал",
+                        text = "$currentCalories " + stringResource(R.string.kkal),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = HomeColors.AccentOrange,
@@ -651,7 +649,7 @@ private fun CaloriesProgressCard(
                         )
                     )
                     Text(
-                        text = "Цель не задана",
+                        text = stringResource(R.string.noTarget),
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = HomeColors.TextDim
                         )

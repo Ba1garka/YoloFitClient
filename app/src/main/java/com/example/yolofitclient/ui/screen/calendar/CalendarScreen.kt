@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yolofitclient.domain.entity.WorkoutEntity
 import com.example.yolofitclient.ui.screen.exercise.ExerciseColors
@@ -35,6 +36,8 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
+import androidx.compose.ui.res.stringResource
+import com.example.yolofitclient.R
 
 object CalendarColors {
     val DarkBackground = Color(0xFF0D0E0D)
@@ -56,7 +59,7 @@ fun CalendarScreen(
     onWorkoutClick: (Int) -> Unit = {},
     viewModel: CalendarViewModel = viewModel()
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
        viewModel.getData()
@@ -92,7 +95,7 @@ fun CalendarScreen(
 
             Row {
                 Text(
-                    text = "КАЛЕНДАРЬ",
+                    text = stringResource(R.string.calendar_title),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 25.dp),
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontWeight = FontWeight.Black,
@@ -129,7 +132,7 @@ private fun CalendarErrorState(state: CalendarState.Error, onRefresh: () -> Unit
             Text(state.reason, color = CalendarColors.TextSecondary)
             Spacer(Modifier.height(16.dp))
             Button(onClick = onRefresh, colors = ButtonDefaults.buttonColors(containerColor = CalendarColors.AccentGreenDark)) {
-                Text("Обновить")
+                Text(stringResource(R.string.retry))
             }
         }
     }
@@ -154,7 +157,7 @@ private fun CalendarContentState(
                 onClick = { selectedDate = selectedDate.minusMonths(1) },
                 modifier = Modifier.clip(CircleShape).background(CalendarColors.CardBackground)
             ) {
-                Icon(Icons.Default.ArrowBack, "Назад", tint = CalendarColors.AccentGreen)
+                Icon(Icons.Default.ArrowBack, stringResource(R.string.back), tint = CalendarColors.AccentGreen)
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -167,7 +170,7 @@ private fun CalendarContentState(
                 Spacer(Modifier.height(4.dp))
                 TextButton(onClick = { selectedDate = LocalDate.now() }) {
                     Text(
-                        "Сегодня",
+                        stringResource(R.string.today),
                         color = CalendarColors.AccentGreen,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp
@@ -179,7 +182,7 @@ private fun CalendarContentState(
                 onClick = { selectedDate = selectedDate.plusMonths(1) },
                 modifier = Modifier.clip(CircleShape).background(CalendarColors.CardBackground)
             ) {
-                Icon(Icons.Default.ArrowForward, "Вперёд", tint = CalendarColors.AccentGreen)
+                Icon(Icons.Default.ArrowForward, stringResource(R.string.next), tint = CalendarColors.AccentGreen)
             }
         }
 
@@ -251,7 +254,7 @@ private fun CalendarContentState(
         val selectedDateWorkouts = workouts.filter { it.workoutDate == selectedDate.toString() }
 
         Text(
-            "ТРЕНИРОВКИ ${selectedDate.format(DateTimeFormatter.ofPattern("dd.MM"))}",
+            stringResource(R.string.calendar_subtitle) + " ${selectedDate.format(DateTimeFormatter.ofPattern("dd.MM"))}",
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelLarge.copy(
                 color = CalendarColors.AccentGreen,
@@ -273,7 +276,7 @@ private fun CalendarContentState(
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        "Нет тренировок на этот день",
+                        stringResource(R.string.noWorkoutToday),
                         color = CalendarColors.TextDim,
                         fontSize = 16.sp,
                         textAlign = TextAlign.Center
@@ -416,7 +419,7 @@ private fun CalendarWorkoutCard(
                     fontSize = 16.sp
                 )
                 Text(
-                    if (workout.completed) "Завершена" else "Активна",
+                    if (workout.completed) stringResource(R.string.complete) else stringResource(R.string.active),
                     color = if (workout.completed) CalendarColors.AccentGreen else CalendarColors.AccentOrange,
                     fontSize = 13.sp
                 )

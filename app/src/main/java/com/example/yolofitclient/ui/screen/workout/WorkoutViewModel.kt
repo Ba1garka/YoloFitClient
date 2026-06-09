@@ -6,22 +6,42 @@ import androidx.lifecycle.viewModelScope
 import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.data.repository.WorkoutRepository
 import com.example.yolofitclient.data.source.WorkoutDataSource
-import com.example.yolofitclient.domain.entity.TrackingConfig
 import com.example.yolofitclient.domain.entity.TrackingConfigEntity
 import com.example.yolofitclient.domain.usecase.CompleteWorkoutUseCase
 import com.example.yolofitclient.domain.usecase.GetWorkoutByIdUseCase
 import com.example.yolofitclient.domain.usecase.SubmitExerciseSetsUseCase
 import com.example.yolofitclient.nn.ExerciseCounter
 import com.example.yolofitclient.nn.FeedbackManager
-import com.example.yolofitclient.nn.PoseDetector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 class WorkoutViewModel(
     private val workoutId: Int
 ) : ViewModel() {
+
+    private val _restSeconds = MutableStateFlow(0)
+    val restSeconds: StateFlow<Int> = _restSeconds.asStateFlow()
+
+    private val _isResting = MutableStateFlow(false)
+    val isResting: StateFlow<Boolean> = _isResting.asStateFlow()
+
+    fun getRestSeconds(): Int = _restSeconds.value
+    fun isResting(): Boolean = _isResting.value
+
+    private fun startRestTimer() {
+        _isResting.value = true
+        _restSeconds.value = 20
+        viewModelScope.launch {
+            while (_restSeconds.value > 0) {
+                delay(1000L)
+                _restSeconds.value -= 1
+            }
+            _isResting.value = false
+        }
+    }
 
     private val getWorkoutByIdUseCase = GetWorkoutByIdUseCase(
         workoutRepository = WorkoutRepository(WorkoutDataSource())
@@ -159,6 +179,11 @@ class WorkoutViewModel(
         val state = _uiState.value
         if (state is WorkoutState.Content) {
             _uiState.value = state.copy(currentReps = reps)
+            val exercise = state.currentExercise ?: return
+            if (reps >= exercise.defaultReps && reps > 0 && !_isResting.value) {
+                completeSet()
+                startRestTimer()
+            }
         }
     }
 

@@ -2,6 +2,8 @@ package com.example.yolofitclient.ui.screen.workout
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -27,16 +29,19 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yolofitclient.data.dto.ExerciseSetDto
 import com.example.yolofitclient.domain.entity.ExerciseEntity
 import com.example.yolofitclient.ui.theme.DiagonalRoundedCornerShape
 import kotlinx.coroutines.delay
+import com.example.yolofitclient.R
 
 object WorkoutScreenColors {
     val DarkBackground = Color(0xFF0D0E0D)
@@ -60,7 +65,7 @@ fun WorkoutScreen(
     onBack: () -> Unit,
     viewModel: WorkoutViewModel = viewModel { WorkoutViewModel(workoutId) }
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(state) {
@@ -162,7 +167,7 @@ private fun WorkoutTopBar(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "ТРЕНИРОВКА",
+                    stringResource(R.string.workout),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Black,
                         color = WorkoutScreenColors.TextPrimary,
@@ -207,9 +212,8 @@ private fun WorkoutTopBar(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        "AI",
-                        color = if (isAiMode) WorkoutScreenColors.AccentGreen
-                        else WorkoutScreenColors.TextDim,
+                        stringResource(R.string.ai),
+                        color = if (isAiMode) WorkoutScreenColors.AccentGreen else WorkoutScreenColors.TextDim,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -231,6 +235,10 @@ private fun ContentState(
     viewModel: WorkoutViewModel,
     onMarkExerciseCompleted: () -> Unit
 ) {
+
+    val isResting by viewModel.isResting.collectAsStateWithLifecycle()
+    val restSeconds by viewModel.restSeconds.collectAsStateWithLifecycle()
+
     val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -279,6 +287,24 @@ private fun ContentState(
                         viewModel.processAiFeedback( angle, phase)
                     },
                 )
+
+                if (isResting) {
+                    val animatedRest by animateIntAsState(
+                        targetValue = restSeconds,
+                        animationSpec = tween(durationMillis = 500)
+                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.7f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "$animatedRest",
+                            fontSize = 80.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFFB2EA1B)
+                        )
+                    }
+                }
             }
 
             state.voiceHint?.let { hint ->
@@ -475,7 +501,7 @@ private fun ManualMode(
         if (state.completedSets.isNotEmpty()) {
             item {
                 Text(
-                    "ВЫПОЛНЕННЫЕ ПОДХОДЫ",
+                    stringResource(R.string.completedSets),
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = WorkoutScreenColors.AccentGreen,
                         letterSpacing = 2.sp,
@@ -510,7 +536,7 @@ private fun CurrentExerciseCard(
             bottomLeft = 16f
         ),
         colors = CardDefaults.cardColors(containerColor = WorkoutScreenColors.CardBackground),
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             1.dp,
             Brush.linearGradient(
                 colors = listOf(
@@ -538,14 +564,14 @@ private fun CurrentExerciseCard(
                 ) {
                     if (exercise != null) {
                         Text(
-                            "Подходы: $completedSets / ${exercise.defaultSets}",
+                            stringResource(R.string.sets) + ": $completedSets / ${exercise.defaultSets}",
                             color = if (completedSets >= exercise.defaultSets)
                                 WorkoutScreenColors.AccentGreen
                             else WorkoutScreenColors.TextDim,
                             fontSize = 13.sp
                         )
                         Text(
-                            "Повторы: ${exercise.defaultReps}",
+                            stringResource(R.string.reps) + ": ${exercise.defaultReps}",
                             color = WorkoutScreenColors.TextDim,
                             fontSize = 13.sp
                         )
@@ -566,14 +592,14 @@ private fun RepsCounter(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = WorkoutScreenColors.CardBackground),
-        border = androidx.compose.foundation.BorderStroke(1.dp, WorkoutScreenColors.CardBorder)
+        border = BorderStroke(1.dp, WorkoutScreenColors.CardBorder)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "ПОВТОРЕНИЯ",
+                stringResource(R.string.repsCaps),
                 style = MaterialTheme.typography.labelSmall.copy(
                     color = WorkoutScreenColors.TextDim,
                     letterSpacing = 2.sp
@@ -649,7 +675,7 @@ private fun WeightInput(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = WorkoutScreenColors.CardBackground),
-        border = androidx.compose.foundation.BorderStroke(1.dp, WorkoutScreenColors.CardBorder)
+        border = BorderStroke(1.dp, WorkoutScreenColors.CardBorder)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -672,7 +698,7 @@ private fun WeightInput(
             }
 
             Text(
-                "Вес (кг):",
+                stringResource(R.string.weight) + " (кг):",
                 color = WorkoutScreenColors.TextSecondary,
                 fontSize = 16.sp
             )
@@ -745,7 +771,7 @@ private fun CompleteSetButton(
                     else WorkoutScreenColors.TextDim
                 )
                 Text(
-                    "Завершить подход",
+                    stringResource(R.string.completeSets),
                     fontWeight = FontWeight.Bold,
                     color = if (enabled) WorkoutScreenColors.DarkBackground
                     else WorkoutScreenColors.TextDim,
@@ -764,10 +790,7 @@ private fun CompletedSetCard(set: ExerciseSetDto) {
         colors = CardDefaults.cardColors(
             containerColor = WorkoutScreenColors.AccentGreenDark.copy(alpha = 0.08f)
         ),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            WorkoutScreenColors.AccentGreen.copy(alpha = 0.1f)
-        )
+        border = BorderStroke(1.dp, WorkoutScreenColors.AccentGreen.copy(alpha = 0.1f))
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -785,7 +808,7 @@ private fun CompletedSetCard(set: ExerciseSetDto) {
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    "Подход ${set.setNumber}",
+                    stringResource(R.string.set) + " ${set.setNumber}",
                     color = WorkoutScreenColors.AccentGreen,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp
@@ -844,7 +867,7 @@ private fun FinishButton(
                     tint = WorkoutScreenColors.AccentOrange
                 )
                 Text(
-                    "Завершить тренировку",
+                    stringResource(R.string.completeWorkout),
                     color = WorkoutScreenColors.AccentOrange,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -863,7 +886,7 @@ private fun LoadingContent() {
         ) {
             CircularProgressIndicator(color = WorkoutScreenColors.AccentGreen)
             Text(
-                "Загрузка тренировки...",
+                stringResource(R.string.loadWorkout),
                 color = WorkoutScreenColors.TextSecondary
             )
         }
@@ -895,7 +918,7 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
                     containerColor = WorkoutScreenColors.AccentGreenDark
                 )
             ) {
-                Text("Повторить")
+                Text(stringResource(R.string.repeat))
             }
         }
     }
@@ -915,13 +938,13 @@ private fun SuccessContent() {
                 modifier = Modifier.size(80.dp)
             )
             Text(
-                "Тренировка завершена!",
+                stringResource(R.string.completedWorkout),
                 color = WorkoutScreenColors.TextPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp
             )
             Text(
-                "Отличная работа!",
+                stringResource(R.string.goodWork),
                 color = WorkoutScreenColors.TextSecondary,
                 fontSize = 16.sp
             )
@@ -966,7 +989,7 @@ private fun MarkExerciseCompletedButton(onClick: () -> Unit) {
                     tint = WorkoutScreenColors.DarkBackground
                 )
                 Text(
-                    "Завершить упражнение",
+                    stringResource(R.string.completeRep),
                     fontWeight = FontWeight.Bold,
                     color = WorkoutScreenColors.DarkBackground,
                     fontSize = 18.sp
@@ -1002,7 +1025,7 @@ private fun ExerciseCompletedCard() {
             )
             Spacer(Modifier.width(12.dp))
             Text(
-                "Упражнение завершено!",
+                stringResource(R.string.repSuccess),
                 color = WorkoutScreenColors.AccentGreen,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp

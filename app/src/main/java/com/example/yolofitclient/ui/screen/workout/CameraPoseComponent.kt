@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,6 +42,7 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 import kotlin.math.acos
 import kotlin.math.sqrt
+import com.example.yolofitclient.R
 
 @Composable
 fun CameraPoseComponent(
@@ -101,6 +103,8 @@ fun CameraPoseComponent(
     var lastFpsTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var smoothedDetections by remember { mutableStateOf(emptyList<PoseDetector.Detection>()) }
 
+    var lastReportedCount by remember { mutableIntStateOf(0) }
+
     DisposableEffect(lifecycle) {
         onDispose {
             detector?.close()
@@ -109,7 +113,7 @@ fun CameraPoseComponent(
 
     if (detector == null) {
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            Text("Ошибка загрузки модели", color = Color.White, fontSize = 14.sp)
+            Text(stringResource(R.string.modelError), color = Color.White, fontSize = 14.sp)
         }
         return
     }
@@ -159,7 +163,7 @@ fun CameraPoseComponent(
                                     }
 
                                     smoothedDetections = if (result.isNotEmpty() && smoothedDetections.isNotEmpty()) {
-                                        val alpha = 0.85f
+                                        val alpha = 0.75f
                                         result.mapIndexed { i, det ->
                                             if (i < smoothedDetections.size) {
                                                 val prev = smoothedDetections[i]
@@ -187,7 +191,13 @@ fun CameraPoseComponent(
 
                                     detections = smoothedDetections //рекомпозиция
                                     exerciseCounter.update(detections)
-                                    onRepsUpdate(exerciseCounter.getCount())
+
+                                    val count = exerciseCounter.getCount()
+
+                                    if (count != lastReportedCount) {
+                                        lastReportedCount = count
+                                        onRepsUpdate(count)
+                                    }
 
                                     if (rawAngle != null && instantPhase != null) {
                                         onAiFeedback(rawAngle, instantPhase)
@@ -321,8 +331,8 @@ fun CameraPoseComponent(
                 Text(
                     text = "${"%.0f".format(angle)}° ${
                         when (phase) {
-                            ExerciseCounter.Phase.DOWN -> "ВНИЗ"
-                            ExerciseCounter.Phase.UP -> "ВВЕРХ"
+                            ExerciseCounter.Phase.DOWN -> stringResource(R.string.down)
+                            ExerciseCounter.Phase.UP -> stringResource(R.string.up)
                             else -> "—"
                         }
                     }",

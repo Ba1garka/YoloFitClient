@@ -45,12 +45,12 @@ class FeedbackManager(
         if (detectedPhase != currentPhase && now - lastFeedbackTime >= minIntervalMs) {
             val advice = when (currentPhase) {
                 ExerciseCounter.Phase.DOWN -> {
-                    if (minAngleInDown > config.angleDown + 5.0) {
+                    if (minAngleInDown > config.angleDown + 10.0) {
                         config.bendHint ?: "Согнитесь сильнее угол был ${minAngleInDown.toInt()}, нужно <= ${config.angleDown.toInt()}"
                     } else null
                 }
                 ExerciseCounter.Phase.UP -> {
-                    if (maxAngleInUp < config.angleUp - 5.0) {
+                    if (maxAngleInUp < config.angleUp - 10.0) {
                         config.straightenHint ?: "Выпрямитесь полностью угол был ${maxAngleInUp.toInt()}, нужно >= ${config.angleUp.toInt()}"
                     } else null
                 }

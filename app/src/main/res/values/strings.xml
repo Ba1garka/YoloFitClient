@@ -33,7 +33,7 @@
     <string name="hello">Привет!</string>
     <string name="goToWorkout">Готов к тренировке?</string>
     <string name="letsCreateWorkout">Создайте новую тренировку</string>
-    <string name="exercisesSmall">Упражнения:</string>
+    <string name="exercisesSmall">упражнения:</string>
     <string name="startWorkout">Начать тренировку</string>
     <string name="calorii">КАЛОРИИ</string>
     <string name="noTarget">Цель не задана</string>
@@ -45,7 +45,7 @@
     <string name="password">Пароль</string>
     <string name="logIn">ВОЙТИ</string>
     <string name="noAccount">Нет аккаунта? </string>
-    <string name="register">Зарегистрироваться</string>
+    <string name="register"> Зарегистрироваться</string>
 
     <string name="deleteSuccessful">Удаление успешно!</string>
     <string name="delete">Удалить</string>

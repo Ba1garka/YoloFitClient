@@ -1,0 +1,891 @@
+package com.example.yolofitclient.presentation.ui.screen.profile
+
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.example.yolofitclient.data.dto.UserDto
+import com.example.yolofitclient.data.source.AuthLocalDataSource
+import com.example.yolofitclient.R
+import com.example.yolofitclient.presentation.ui.theme.ExerciseColors
+import com.example.yolofitclient.presentation.ui.theme.DiagonalRoundedCornerShape
+import com.example.yolofitclient.presentation.viewmodel.ProfileViewModel
+
+
+@Composable
+fun ProfileScreen(
+    onLogoutClick: () -> Unit,
+    viewModel: ProfileViewModel = viewModel<ProfileViewModel>()
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    var isEditing by remember { mutableStateOf(false) }
+    var editedEmail by remember { mutableStateOf("") }
+    var editedBirthDate by remember { mutableStateOf("") }
+    var editedGender by remember { mutableStateOf("") }
+    var editedHeight by remember { mutableStateOf("") }
+    var editedWeight by remember { mutableStateOf("") }
+    var editedFitnessLevel by remember { mutableStateOf("") }
+    var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var editedGoal by remember { mutableStateOf("") }
+
+    var showGenderDropdown by remember { mutableStateOf(false) }
+    var showFitnessDropdown by remember { mutableStateOf(false) }
+    var showGoalsDropdown by remember { mutableStateOf(false) }
+
+    val genders = listOf("male", "female")
+    val fitnessLevels = listOf("beginner", "intermediate", "advanced")
+    val goals = listOf("LOSE_WEIGHT","GAIN_WEIGHT","BUILD_MUSCLE")
+
+    var user by remember { mutableStateOf<UserDto?>(null) }
+
+    LaunchedEffect(Unit) {
+        val currentUser = AuthLocalDataSource.getCurrentUser()
+        user = currentUser
+    }
+
+    LaunchedEffect(state) {
+        when (state) {
+            is ProfileState.Success -> {
+                user = AuthLocalDataSource.getCurrentUser()
+                isEditing = false
+            }
+            is ProfileState.Error -> {
+                Toast.makeText(context, (state as ProfileState.Error).reason, Toast.LENGTH_LONG).show()
+            }
+            else -> {}
+        }
+    }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        photoUri = uri
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize().background(ExerciseColors.Background)
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        ExerciseColors.AccentGreen.copy(alpha = 0.12f),
+                        Color.Transparent
+                    ),
+                    center = Offset(size.width * 0.5f, size.height * 0.05f),
+                    radius = size.minDimension * 0.7f
+                ),
+                radius = size.minDimension * 0.7f,
+                center = Offset(size.width * 0.5f, size.height * 0.05f)
+            )
+
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        ExerciseColors.AccentGreenDark.copy(alpha = 0.06f),
+                        Color.Transparent
+                    ),
+                    center = Offset(size.width * 0.8f, size.height * 0.8f),
+                    radius = size.minDimension * 0.5f
+                ),
+                radius = size.minDimension * 0.5f,
+                center = Offset(size.width * 0.8f, size.height * 0.8f)
+            )
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.profile),
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            color = ExerciseColors.TextPrimary,
+                            letterSpacing = 2.sp,
+                            fontSize = 32.sp
+                        )
+                    )
+
+                    IconButton(
+                        onClick = {
+                            if (isEditing) {
+
+                                val updatedUser = user!!.copy(
+                                    email = editedEmail.ifEmpty { user!!.email },
+                                    birthDate = editedBirthDate.ifEmpty { user!!.birthDate },
+                                    gender = editedGender.ifEmpty { user!!.gender },
+                                    height = editedHeight.ifEmpty { user!!.height },
+                                    weight = editedWeight.ifEmpty { user!!.weight },
+                                    fitnessLevel = editedFitnessLevel.ifEmpty { user!!.fitnessLevel },
+                                    photoUrl = photoUri?.toString() ?: user!!.photoUrl,
+                                    goal = editedGoal.ifEmpty { user!!.goal }
+                                )
+                                viewModel.updateUser(updatedUser)
+                            }
+                            isEditing = !isEditing
+                        },
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(
+                                if (isEditing) ExerciseColors.AccentGreen.copy(alpha = 0.2f)
+                                else ExerciseColors.FieldBackground
+                            )
+                    ) {
+                        Icon(
+                            imageVector = if (isEditing) Icons.Default.Check else Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = if (isEditing) ExerciseColors.AccentGreen else ExerciseColors.TextSecondary
+                        )
+                    }
+                }
+            }
+
+
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier.size(150.dp).clip(CircleShape)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        ExerciseColors.AccentGreen.copy(alpha = 0.3f),
+                                        ExerciseColors.AccentGreenDark.copy(alpha = 0.15f)
+                                    ),
+                                    start = Offset(0f, 0f),
+                                    end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                                )
+                            )
+                            .then(
+                                if (isEditing) {
+                                    Modifier.clickable { imagePickerLauncher.launch("image/*") }
+                                } else Modifier
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (photoUri != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(photoUri)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize().padding(3.dp).clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else if (user?.photoUrl != null) {
+                            println("Фото пользователя ${user!!.photoUrl}")
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(user!!.photoUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize().padding(3.dp).clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = ExerciseColors.AccentGreen,
+                                modifier = Modifier.size(70.dp)
+                            )
+                        }
+
+                        if (isEditing) {
+                            Box(
+                                modifier = Modifier.align(Alignment.BottomEnd).offset(x = 8.dp, y = 8.dp).size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(ExerciseColors.AccentGreen)
+                                    .border(3.dp, ExerciseColors.Background, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = "Изменить фото",
+                                    tint = ExerciseColors.Background,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                    Text(
+                        text = user?.name ?: "",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = ExerciseColors.TextPrimary,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = user?.fitnessLevel ?: "",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = ExerciseColors.AccentGreen,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+            }
+
+            item {
+                SectionTitle(stringResource(R.string.personalInfo))
+            }
+
+            item {
+                InfoField(
+                    icon = Icons.Default.Email,
+                    label = stringResource(R.string.email),
+                    value = user?.email ?: stringResource(R.string.noEmail),
+                    isEditing = isEditing,
+                    editedValue = editedEmail,
+                    onEditValueChange = { editedEmail = it },
+                    keyboardType = KeyboardType.Email
+                )
+            }
+
+            item {
+                InfoField(
+                    icon = Icons.Default.CalendarMonth,
+                    label = stringResource(R.string.birthday),
+                    value = user?.birthDate ?: stringResource(R.string.noData),
+                    isEditing = isEditing,
+                    editedValue = editedBirthDate,
+                    onEditValueChange = { editedBirthDate = it },
+                    placeholder = stringResource(R.string.placeholderData)
+                )
+            }
+
+            item {
+                GenderField(
+                    isEditing = isEditing,
+                    gender = if (isEditing) editedGender else user?.gender,
+                    onGenderChange = { editedGender = it },
+                    genders = genders,
+                    showDropdown = showGenderDropdown,
+                    onDropdownToggle = { showGenderDropdown = it }
+                )
+            }
+
+            item {
+                SectionTitle(stringResource(R.string.physicalParams))
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    PhysicalField(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Height,
+                        label = stringResource(R.string.height),
+                        value = "${user?.height} см",
+                        isEditing = isEditing,
+                        editedValue = editedHeight ?: "",
+                        onEditValueChange = { editedHeight = it },
+                        suffix = "см"
+                    )
+
+                    PhysicalField(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.MonitorWeight,
+                        label = stringResource(R.string.weight),
+                        value = "${user?.weight} кг",
+                        isEditing = isEditing,
+                        editedValue = editedWeight ?: "",
+                        onEditValueChange = { editedWeight = it },
+                        suffix = "кг"
+                    )
+                }
+            }
+
+            item {
+                FitnessLevelField(
+                    isEditing = isEditing,
+                    fitnessLevel = if (isEditing) editedFitnessLevel else user?.fitnessLevel,
+                    onLevelChange = { editedFitnessLevel = it },
+                    levels = fitnessLevels,
+                    showDropdown = showFitnessDropdown,
+                    onDropdownToggle = { showFitnessDropdown = it },
+                    stringResource(R.string.trainingLevel),
+                    Icons.Default.TrendingUp
+                )
+            }
+
+            item {
+                FitnessLevelField(
+                    isEditing = isEditing,
+                    fitnessLevel = if (isEditing) editedGoal else user?.goal,
+                    onLevelChange = { editedGoal = it },
+                    levels = goals,
+                    showDropdown = showGoalsDropdown,
+                    onDropdownToggle = { showGoalsDropdown = it },
+                    stringResource(R.string.goal),
+                    Icons.Default.GolfCourse
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (isEditing) {
+                    Button(
+                        onClick = {
+                            val updatedUser = user!!.copy(
+                                email = editedEmail.ifEmpty { user!!.email },
+                                birthDate = editedBirthDate.ifEmpty { user!!.birthDate },
+                                gender = editedGender.ifEmpty { user!!.gender},
+                                height = editedHeight.ifEmpty { user!!.height},
+                                weight = editedWeight.ifEmpty { user!!.weight },
+                                fitnessLevel = editedFitnessLevel.ifEmpty { user!!.fitnessLevel },
+                                photoUrl = photoUri?.toString() ?: user!!.photoUrl,
+                                goal = editedGoal.ifEmpty { user!!.goal }
+                            )
+                            viewModel.updateUser(updatedUser)
+                            isEditing = false
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = DiagonalRoundedCornerShape(
+                            topLeft = 40f,
+                            topRight = 16f,
+                            bottomRight = 40f,
+                            bottomLeft = 16f
+                        ),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        ),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            ExerciseColors.AccentGreen,
+                                            ExerciseColors.AccentGreenDark
+                                        ),
+                                        start = Offset(0f, 0f),
+                                        end = Offset(Float.POSITIVE_INFINITY, 0f)
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = ExerciseColors.Background
+                                )
+                                Text(
+                                    text = stringResource(R.string.save),
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = ExerciseColors.Background
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        onLogoutClick()
+                        AuthLocalDataSource.clearToken()
+                    },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = DiagonalRoundedCornerShape(
+                        topLeft = 16f,
+                        topRight = 40f,
+                        bottomRight = 16f,
+                        bottomLeft = 40f
+                    ),
+                    border = BorderStroke(1.dp, ExerciseColors.ErrorRed),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = ExerciseColors.ErrorRed.copy(alpha = 0.1f)
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.Logout,
+                        contentDescription = null,
+                        tint = ExerciseColors.ErrorRed
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        stringResource(R.string.exit),
+                        color = ExerciseColors.ErrorRed,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge.copy(
+            color = ExerciseColors.AccentGreen,
+            letterSpacing = 2.sp,
+            fontWeight = FontWeight.Bold
+        ),
+        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
+    )
+}
+
+@Composable
+private fun InfoField(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    isEditing: Boolean,
+    editedValue: String,
+    onEditValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    placeholder: String = ""
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = ExerciseColors.CardBackground
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(
+                        ExerciseColors.AccentGreen.copy(alpha = 0.15f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = ExerciseColors.AccentGreen,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            if (isEditing) {
+                TextField(
+                    value = editedValue,
+                    onValueChange = onEditValueChange,
+                    modifier = Modifier.weight(1f),
+                    placeholder = {
+                        Text(placeholder.ifEmpty { label }, color = ExerciseColors.TextDim)
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = ExerciseColors.AccentGreen,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = ExerciseColors.AccentGreen,
+                        focusedTextColor = ExerciseColors.TextPrimary,
+                        unfocusedTextColor = ExerciseColors.TextPrimary
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                    singleLine = true
+                )
+            } else {
+                Column {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = ExerciseColors.TextDim,
+                            fontSize = 11.sp
+                        )
+                    )
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = ExerciseColors.TextPrimary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GenderField(
+    isEditing: Boolean,
+    gender: String?,
+    onGenderChange: (String) -> Unit,
+    genders: List<String>,
+    showDropdown: Boolean,
+    onDropdownToggle: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = ExerciseColors.CardBackground
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier.size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(
+                        ExerciseColors.AccentGreen.copy(alpha = 0.15f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Wc,
+                    contentDescription = null,
+                    tint = ExerciseColors.AccentGreen,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            if (isEditing) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(ExerciseColors.FieldBackground)
+                        .clickable { onDropdownToggle(true) }
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = gender ?: "", color = ExerciseColors.AccentGreen)
+                        Icon(
+                            Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = ExerciseColors.AccentGreen
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showDropdown,
+                        onDismissRequest = { onDropdownToggle(false) },
+                        modifier = Modifier.Companion.background(ExerciseColors.FieldBackground)
+                    ) {
+                        genders.forEach { genderOption ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        genderOption,
+                                        color = if (gender == genderOption)
+                                            ExerciseColors.AccentGreen
+                                        else ExerciseColors.TextSecondary
+                                    )
+                                },
+                                onClick = {
+                                    onGenderChange(genderOption)
+                                    onDropdownToggle(false)
+                                }
+                            )
+                        }
+                    }
+                }
+            } else {
+                Column {
+                    Text(
+                        text = stringResource(R.string.gender),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = ExerciseColors.TextDim,
+                            fontSize = 11.sp
+                        )
+                    )
+                    Text(
+                        text = gender ?: "",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = ExerciseColors.TextPrimary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhysicalField(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    label: String,
+    value: String,
+    isEditing: Boolean,
+    editedValue: String,
+    onEditValueChange: (String) -> Unit,
+    suffix: String
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = ExerciseColors.CardBackground
+        )
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                ExerciseColors.AccentGreen.copy(alpha = 0.2f),
+                                ExerciseColors.AccentGreenDark.copy(alpha = 0.1f)
+                            ),
+                            start = Offset(0f, 0f),
+                            end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = ExerciseColors.AccentGreen,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            if (isEditing) {
+                TextField(
+                    value = editedValue,
+                    onValueChange = onEditValueChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = ExerciseColors.AccentGreen,
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center
+                    ),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = ExerciseColors.AccentGreen,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = ExerciseColors.AccentGreen,
+                        focusedTextColor = ExerciseColors.AccentGreen,
+                        unfocusedTextColor = ExerciseColors.AccentGreen
+                    )
+                )
+                Text(
+                    text = suffix,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = ExerciseColors.TextDim,
+                        letterSpacing = 1.sp
+                    )
+                )
+            } else {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = ExerciseColors.AccentGreen,
+                        fontSize = 24.sp
+                    )
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = ExerciseColors.TextDim,
+                        letterSpacing = 1.sp
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FitnessLevelField(
+    isEditing: Boolean,
+    fitnessLevel: String?,
+    onLevelChange: (String) -> Unit,
+    levels: List<String>,
+    showDropdown: Boolean,
+    onDropdownToggle: (Boolean) -> Unit,
+    text: String,
+    icon: ImageVector
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = ExerciseColors.CardBackground
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(
+                        ExerciseColors.AccentGreen.copy(alpha = 0.15f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = ExerciseColors.AccentGreen,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            if (isEditing) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(ExerciseColors.FieldBackground)
+                        .clickable { onDropdownToggle(true) }
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = fitnessLevel ?: "",
+                            color = ExerciseColors.AccentGreen
+                        )
+                        Icon(
+                            Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = ExerciseColors.AccentGreen
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showDropdown,
+                        onDismissRequest = { onDropdownToggle(false) },
+                        modifier = Modifier.Companion.background(ExerciseColors.FieldBackground)
+                    ) {
+                        levels.forEach { level ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        level,
+                                        color = if (fitnessLevel == level)
+                                            ExerciseColors.AccentGreen
+                                        else ExerciseColors.TextSecondary
+                                    )
+                                },
+                                onClick = {
+                                    onLevelChange(level)
+                                    onDropdownToggle(false)
+                                }
+                            )
+                        }
+                    }
+                }
+            } else {
+                Column {
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = ExerciseColors.TextDim,
+                            fontSize = 11.sp
+                        )
+                    )
+                    Text(
+                        text = fitnessLevel ?: "",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = ExerciseColors.TextPrimary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
